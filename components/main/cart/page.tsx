@@ -105,8 +105,9 @@ function getImageUrlFromProduct(product: Product): string {
   if (product.image && typeof product.image === "string") {
     return product.image;
   }
-  if (Array.isArray((product as any).images) && (product as any).images.length > 0) {
-    return (product as any).images[0];
+  const prodWithImages = product as Product & { images?: string[] };
+  if (Array.isArray(prodWithImages.images) && prodWithImages.images.length > 0) {
+    return prodWithImages.images[0];
   }
   return "/default-image.png";
 }

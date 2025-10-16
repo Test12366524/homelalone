@@ -16,7 +16,6 @@ import {
 
 import { type ChatListItem, type ChatMessage } from "@/types/chat/core";
 
-import PickUserModal from "./pick-user-modal";
 import ChatSidebar from "./chat-sidebar";
 import ChatWindow from "./chat-window";
 
@@ -400,14 +399,6 @@ export default function ChatPage() {
         onSendMessage={handleSendMessage}
         setSidebarOpen={setSidebarOpen}
         currentUserId={currentUserId}
-      />
-
-      <PickUserModal
-        open={showPickModal}
-        onClose={() => setShowPickModal(false)}
-        onPickUser={(id, name) => {
-          void handleCreatePersonalChat(id, name);
-        }}
       />
     </div>
   );
