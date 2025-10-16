@@ -4,11 +4,16 @@ import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/use-translation";
 import en from "@/translations/home/en";
 import id from "@/translations/home/id";
-import { HandshakeIcon, LandmarkIcon } from "lucide-react";
+// Mengganti ikon yang lebih relevan untuk properti
+import { HomeIcon, CalculatorIcon, MapPinIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function Hero() {
   const t = useTranslation({ id, en });
+
+  // Warna brand properti NESTAR:
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const ACCENT_COLOR = "#00BFFF"; // Biru Muda
 
   return (
     <section className="relative bg-white py-16">
@@ -21,31 +26,44 @@ export default function Hero() {
           className="space-y-6"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
-            <span className="text-[#E53935]">Koperasi Merah Putih:</span> <br />
-            Mandiri, Sejahtera, dan Berdaya
+            <span style={{ color: PRIMARY_COLOR }}>NESTAR:</span> <br />
+            Jembatan Nyaman Menuju Hunian Impian Anda
           </h1>
           <p className="text-gray-600 text-lg">
-            Wujudkan impian finansial Anda bersama kami. Nikmati layanan simpan
-            pinjam yang mudah dan cepat, serta jelajahi beragam produk unggulan
-            dari UMKM lokal di marketplace kami.
+            Jelajahi properti terverifikasi, dapatkan simulasi KPR akurat, dan
+            hubungi agen profesional. **NESTAR** adalah portal properti digital
+            yang menawarkan **kepercayaan** dan **stabilitas** dalam setiap
+            transaksi.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex gap-4">
             <Link
-              href="/service"
-              className="px-6 py-3 bg-[#E53935] text-white font-medium rounded-xl shadow-md hover:bg-red-600 transition flex items-center gap-x-1.5"
+              href="/properti-dijual"
+              style={{ backgroundColor: PRIMARY_COLOR }}
+              className="px-6 py-3 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition flex items-center gap-x-1.5"
             >
-              <LandmarkIcon className="size-5" />
-              Layanan Koperasi
+              <HomeIcon className="size-5" />
+              Cari Properti Dijual
             </Link>
             <Link
-              href="/product"
-              className="px-6 py-3 bg-gray-200 text-gray-800 font-medium rounded-xl shadow-md hover:bg-gray-300 transition flex items-center gap-x-1.5"
+              href="/kpr-simulator"
+              style={{
+                backgroundColor: ACCENT_COLOR,
+                color: PRIMARY_COLOR,
+                borderColor: PRIMARY_COLOR,
+                borderWidth: "1px",
+              }}
+              className="px-6 py-3 font-medium rounded-xl shadow-md hover:bg-sky-400 transition flex items-center gap-x-1.5"
             >
-              <HandshakeIcon className="size-5" />
-              Marketplace
+              <CalculatorIcon className="size-5" />
+              Simulasi KPR
             </Link>
+          </div>
+          {/* Tambahan: Aksen untuk kepercayaan dan lokasi */}
+          <div className="flex items-center text-sm text-gray-500 pt-2">
+            <MapPinIcon className="size-4 mr-2" />
+            Ribuan listing terverifikasi di seluruh Indonesia.
           </div>
         </motion.div>
 
@@ -56,9 +74,10 @@ export default function Hero() {
           transition={{ duration: 0.8 }}
           className="flex justify-center"
         >
+          {/* Anda perlu mengganti sumber gambar ke ilustrasi rumah/apartemen yang relevan */}
           <Image
-            src="/hero-koperasi.webp"
-            alt="Koperasi Merah Putih Unit Usaha"
+            src="/nestar-hero.webp" // Ganti dengan path gambar properti Anda
+            alt="NESTAR Properti Digital"
             width={500}
             height={500}
             className="rounded-2xl shadow-lg"

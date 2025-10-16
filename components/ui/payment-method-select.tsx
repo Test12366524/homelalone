@@ -20,6 +20,7 @@ export function PaymentMethodSelect({
       ? [
           { value: "bank_transfer", label: "Bank Transfer (VA)" },
           { value: "qris", label: "QRIS" },
+          { value: "card", label: "Kartu Kredit/Debit" },
         ]
       : [
           { value: "bank_transfer", label: "Bank Transfer (VA)" },

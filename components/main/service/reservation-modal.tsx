@@ -310,7 +310,7 @@ export default function ReservationModal({
         {/* Header */}
         <div className="flex justify-between items-center mb-6 bg-white z-10">
           <h3 className="w-full text-xl md:text-left font-bold text-[#000000]">
-            Layanan Jasa Koperasi Merah Putih
+            Layanan Jasa NESTAR
           </h3>
           <button
             onClick={onClose}

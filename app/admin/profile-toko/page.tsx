@@ -334,7 +334,7 @@ export default function ShopProfilePage() {
 
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Koperasi Merah Putih
+            NESTAR
           </h1>
           <p className="text-sm text-gray-500">
             <span className="mr-2">Manajemen Toko</span>

@@ -9,18 +9,16 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Sparkles,
-  Shield,
+  ShieldCheck, // Icon untuk kepercayaan/verifikasi
   Heart,
-  Leaf,
   CheckCircle,
   AlertCircle,
   User,
   Phone,
   ArrowLeft,
-  Landmark, // New icon for Koperasi
-  Store, // New icon for Marketplace
-  Users, // New icon for members
+  Home, // Icon untuk Properti
+  Briefcase, // Icon untuk Agen Profesional
+  MapPin, // Icon untuk lokasi/cakupan
 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRegisterMutation } from "@/services/auth.service";
@@ -54,7 +52,6 @@ interface ForgotPasswordData {
   email: string;
 }
 
-// New type for OTP form data
 interface OtpFormData {
   email: string;
   otp: string;
@@ -62,43 +59,48 @@ interface OtpFormData {
   confirmPassword: string;
 }
 
+// Warna NESTAR Properti
+const PRIMARY_COLOR = "#003366"; // Biru Gelap
+const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+
+// Konten Kebijakan & Syarat disesuaikan untuk Properti
 const TERMS_CONTENT = {
-  title: "Syarat & Ketentuan",
+  title: "Syarat & Ketentuan Penggunaan Platform",
   content: (
     <>
       <h3>1. Penerimaan Persyaratan</h3>
       <p>
-        Dengan mendaftar dan menggunakan layanan Koperasi Merah Putih (Layanan), Anda setuju untuk terikat oleh Syarat dan Ketentuan ini (Syarat). Jika Anda tidak setuju dengan Syarat ini, Anda tidak boleh menggunakan Layanan.
+        Dengan mendaftar dan menggunakan layanan NESTAR (Layanan), Anda setuju untuk terikat oleh Syarat dan Ketentuan ini (Syarat). Layanan ini berfokus pada **jual beli properti, listing terverifikasi, dan layanan agen.**
       </p>
 
-      <h3>2. Layanan Koperasi</h3>
+      <h3>2. Verifikasi Properti</h3>
       <p>
-        Layanan kami meliputi fasilitas simpan pinjam bagi anggota, platform marketplace untuk UMKM, serta program pemberdayaan anggota lainnya. Semua layanan tunduk pada peraturan internal Koperasi dan hukum yang berlaku di Indonesia.
+        Semua listing properti di NESTAR telah melalui proses verifikasi legalitas dasar. Namun, pembeli tetap diwajibkan melakukan due diligence tambahan. NESTAR tidak bertanggung jawab atas kerugian yang timbul dari kesalahan informasi yang disediakan oleh penjual/agen.
       </p>
 
-      <h3>3. Kewajiban Anggota</h3>
+      <h3>3. Kewajiban Pengguna</h3>
       <ul>
-        <li>Memberikan informasi yang akurat dan terkini saat pendaftaran.</li>
+        <li>Memberikan informasi pribadi yang akurat saat pendaftaran.</li>
         <li>Menjaga kerahasiaan password dan keamanan akun.</li>
-        <li>Bertanggung jawab atas semua aktivitas yang terjadi di bawah akun Anda.</li>
-        <li>Mematuhi semua anggaran dasar dan anggaran rumah tangga (AD/ART) Koperasi.</li>
+        <li>Melakukan komunikasi profesional dan etis dengan agen properti.</li>
+        <li>Mematuhi semua hukum dan peraturan yang berlaku terkait transaksi properti.</li>
       </ul>
 
-      <h3>4. Larangan</h3>
+      <h3>4. Transaksi & KPR</h3>
       <p>
-        Anda dilarang menggunakan Layanan untuk tujuan ilegal, penipuan, atau aktivitas yang dapat merugikan Koperasi dan anggotanya.
+        NESTAR menyediakan simulasi KPR sebagai alat bantu estimasi. Keputusan akhir, suku bunga, dan persetujuan pinjaman sepenuhnya berada di tangan bank mitra yang bersangkutan.
       </p>
     </>
   ),
 };
 
 const PRIVACY_POLICY_CONTENT = {
-  title: "Kebijakan Privasi",
+  title: "Kebijakan Privasi Data Properti",
   content: (
     <>
       <h3>1. Informasi yang Kami Kumpulkan</h3>
       <p>
-        Kami mengumpulkan informasi yang Anda berikan secara langsung saat pendaftaran, seperti nama lengkap, alamat email, nomor telepon, dan data lain yang diperlukan untuk keanggotaan. Kami juga dapat mengumpulkan data transaksi saat Anda menggunakan layanan simpan pinjam atau marketplace.
+        Kami mengumpulkan informasi yang Anda berikan saat pendaftaran (nama, email, telepon) dan data transaksi (properti yang dicari, preferensi KPR). Kami juga mengumpulkan data listing properti (alamat, spesifikasi) dari agen dan developer.
       </p>
 
       <h3>2. Bagaimana Kami Menggunakan Informasi Anda</h3>
@@ -106,15 +108,15 @@ const PRIVACY_POLICY_CONTENT = {
         Informasi Anda digunakan untuk:
       </p>
       <ul>
-        <li>Memverifikasi identitas Anda dan mengelola keanggotaan Anda.</li>
-        <li>Memproses transaksi simpan pinjam dan jual beli di marketplace.</li>
-        <li>Mengirimkan informasi penting terkait layanan Koperasi.</li>
-        <li>Meningkatkan kualitas layanan kami.</li>
+        <li>Memverifikasi identitas pembeli dan legalitas listing properti.</li>
+        <li>Menghubungkan Anda dengan agen properti yang relevan.</li>
+        <li>Memproses permohonan simulasi KPR awal.</li>
+        <li>Meningkatkan akurasi rekomendasi properti kami.</li>
       </ul>
 
       <h3>3. Keamanan Data</h3>
       <p>
-        Kami menerapkan langkah-langkah keamanan yang wajar untuk melindungi informasi pribadi Anda dari akses, penggunaan, atau pengungkapan yang tidak sah. Data Anda dienkripsi dan disimpan di server yang aman.
+        Kami menerapkan langkah-langkah keamanan digital standar industri untuk melindungi data sensitif properti dan informasi pribadi Anda dari akses tidak sah.
       </p>
     </>
   ),
@@ -125,24 +127,22 @@ export default function LoginPage() {
   const { data: session } = useSession();
   const sessionId = (session?.user as { id?: number } | undefined)?.id;
 
-  // Redirect if already logged in
   if (sessionId) {
     router.replace("/me");
   }
-
 
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
-  const [showOtpForm, setShowOtpForm] = useState<boolean>(false); // New state
+  const [showOtpForm, setShowOtpForm] = useState<boolean>(false);
 
   const [modalContent, setModalContent] = useState<{
     title: string;
     content: React.ReactNode;
   } | null>(null);
-  
+
   const [loginData, setLoginData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -162,7 +162,6 @@ export default function LoginPage() {
       email: "",
     });
 
-  // New state for OTP form and loading
   const [otpFormData, setOtpFormData] = useState<OtpFormData>({
     email: "",
     otp: "",
@@ -180,7 +179,7 @@ export default function LoginPage() {
 
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
-  // ===== Handlers
+  // ===== Handlers (Logika dipertahankan, hanya pesan error/sukses disesuaikan)
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors([]);
@@ -203,14 +202,14 @@ export default function LoginPage() {
       });
 
       if (res?.ok) {
-        setSuccessMsg("Berhasil masuk. Mengarahkan…");
+        setSuccessMsg("Berhasil masuk. Mengarahkan ke dashboard properti…");
         router.push("/me");
       } else {
-        setErrors(["Gagal masuk. Email atau password salah."]);
+        setErrors(["Gagal masuk. Email atau password tidak cocok."]);
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrors(["Login gagal. Cek kembali email dan password."]);
+      setErrors(["Login gagal. Terjadi masalah koneksi."]);
     } finally {
       setIsLoggingIn(false);
     }
@@ -229,7 +228,7 @@ export default function LoginPage() {
     if (registerData.password !== registerData.confirmPassword)
       newErrors.push("Konfirmasi password tidak sesuai");
     if (!registerData.agreeToTerms)
-      newErrors.push("Anda harus menyetujui syarat dan ketentuan");
+      newErrors.push("Anda harus menyetujui syarat dan ketentuan properti");
 
     if (newErrors.length > 0) {
       setErrors(newErrors);
@@ -246,7 +245,7 @@ export default function LoginPage() {
 
     try {
       await registerMutation(payload).unwrap();
-      setSuccessMsg("Registrasi berhasil! Silakan masuk.");
+      setSuccessMsg("Registrasi berhasil! Silakan masuk dan mulai cari rumah.");
       setLoginData((p) => ({ ...p, email: registerData.email }));
       setIsLogin(true);
     } catch (err) {
@@ -257,7 +256,6 @@ export default function LoginPage() {
     }
   };
 
-  // Corrected handler for forgot password
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors([]);
@@ -268,8 +266,10 @@ export default function LoginPage() {
       return;
     }
 
+    // ... (Logika fetch API dipertahankan) ...
     setIsSendingResetLink(true);
     try {
+        // GANTI URL API INI jika URL backend properti Anda berbeda
       const response = await fetch(
         "https://cms.yameiyashop.com/api/v1/password/reset",
         {
@@ -285,7 +285,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         setSuccessMsg(
-          "Jika email terdaftar, tautan dan kode reset password akan dikirimkan. Silakan periksa email Anda dan masukkan kode di bawah."
+          "Kode reset password telah dikirimkan ke email Anda. Silakan periksa inbox dan masukkan kode di bawah."
         );
         setOtpFormData((prev) => ({
           ...prev,
@@ -296,7 +296,7 @@ export default function LoginPage() {
       } else {
         const message =
           data.message ||
-          "Gagal mengirim tautan reset password. Silakan coba lagi.";
+          "Gagal mengirim kode reset. Silakan coba lagi.";
         setErrors([message]);
       }
     } catch (err) {
@@ -307,7 +307,6 @@ export default function LoginPage() {
     }
   };
 
-  // New handler for OTP form submission
   const handleOtpSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors([]);
@@ -329,6 +328,7 @@ export default function LoginPage() {
 
     setIsVerifyingOtp(true);
     try {
+        // GANTI URL API INI jika URL backend properti Anda berbeda
       const response = await fetch(
         "https://cms.yameiyashop.com/api/v1/password/reset/validate-otp",
         {
@@ -367,29 +367,36 @@ export default function LoginPage() {
     }
   };
 
-  // ===== UI
-  // Conditional rendering for the new forms
-  if (showForgotPassword) {
+  // ===== UI Login/Register/Forgot Password (Warna dan Konten Disesuaikan)
+
+  if (showForgotPassword || showOtpForm) {
+    // Shared template for Forgot Password and OTP forms
+    const title = showForgotPassword ? "Lupa Password?" : "Verifikasi & Atur Ulang Password";
+    const subtitle = showForgotPassword 
+        ? "Masukkan email Anda untuk mengirimkan kode reset password."
+        : "Masukkan kode OTP yang dikirimkan ke email Anda, lalu buat password baru.";
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#DFF19D]/20 via-[#BFF0F5]/20 to-[#F6CCD0]/20 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundImage: `linear-gradient(to br, ${ACCENT_COLOR}20, #FFFFFF20, ${PRIMARY_COLOR}20)` }}>
         <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#e84741] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: PRIMARY_COLOR }}>
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Lupa Password?
+              {title}
             </h2>
             <p className="text-gray-600">
-              Masukkan email Anda dan kami akan mengirimkan link untuk reset
-              password
+              {subtitle}
             </p>
           </div>
 
+          {/* Error/Success Messages (dipertahankan) */}
           {errors.length > 0 && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                {/* ... */}
                 <div>
                   <h4 className="font-semibold text-red-800 mb-1">
                     Terjadi Kesalahan:
@@ -409,210 +416,153 @@ export default function LoginPage() {
               {successMsg}
             </div>
           )}
-
-          <form onSubmit={handleForgotPassword} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  value={forgotPasswordData.email}
-                  onChange={(e) =>
-                    setForgotPasswordData({ email: e.target.value })
-                  }
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
-                  placeholder="Masukkan email Anda"
-                  required
-                />
+          
+          {/* Form Content (Disambung ke handler yang sama) */}
+          <form onSubmit={showForgotPassword ? handleForgotPassword : handleOtpSubmit} className="space-y-6">
+            {showForgotPassword ? (
+              // Forgot Password Form
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={forgotPasswordData.email}
+                    onChange={(e) =>
+                      setForgotPasswordData({ email: e.target.value })
+                    }
+                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Masukkan email Anda"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              // OTP Form
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Kode OTP
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={otpFormData.otp}
+                      onChange={(e) =>
+                        setOtpFormData((prev) => ({ ...prev, otp: e.target.value }))
+                      }
+                      className="w-full px-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent text-center font-bold text-lg tracking-[0.25em]"
+                      placeholder="------"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Password Baru
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={otpFormData.password}
+                      onChange={(e) =>
+                        setOtpFormData((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
+                      placeholder="Minimal 8 karakter"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Konfirmasi Password Baru
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={otpFormData.confirmPassword}
+                      onChange={(e) =>
+                        setOtpFormData((prev) => ({
+                          ...prev,
+                          confirmPassword: e.target.value,
+                        }))
+                      }
+                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
+                      placeholder="Ulangi password baru"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => {
-                  setShowForgotPassword(false);
-                  setErrors([]);
-                  setSuccessMsg(null);
+                    if (showOtpForm) {
+                        setShowOtpForm(false);
+                        setShowForgotPassword(true);
+                    } else {
+                        setShowForgotPassword(false);
+                        setErrors([]);
+                        setSuccessMsg(null);
+                    }
                 }}
                 className="flex-1 py-4 border border-gray-300 text-gray-700 rounded-2xl font-semibold hover:bg-gray-50 transition-colors"
               >
-                Batal
+                {showOtpForm ? "Kembali (Ganti Email)" : "Batal"}
               </button>
               <button
                 type="submit"
-                disabled={isSendingResetLink}
-                className="flex-1 bg-[#e84741] text-white py-4 rounded-2xl font-semibold hover:bg-[#e84741]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={isSendingResetLink || isVerifyingOtp}
+                className="flex-1 text-white py-4 rounded-2xl font-semibold hover:opacity-90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: PRIMARY_COLOR }}
               >
                 {isSendingResetLink ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Mengirim...
                   </>
-                ) : (
-                  "Kirim Link"
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
-  } else if (showOtpForm) {
-    // New condition for OTP form
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#DFF19D]/20 via-[#BFF0F5]/20 to-[#F6CCD0]/20 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#e84741] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Verifikasi & Atur Ulang Password
-            </h2>
-            <p className="text-gray-600">
-              Masukkan kode OTP yang dikirimkan ke email Anda, lalu buat
-              password baru.
-            </p>
-          </div>
-
-          {errors.length > 0 && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-red-800 mb-1">
-                    Terjadi Kesalahan:
-                  </h4>
-                  <ul className="text-sm text-red-700 space-y-1">
-                    {errors.map((error) => (
-                      <li key={error}>• {error}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800">
-              {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleOtpSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Kode OTP
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={otpFormData.otp}
-                  onChange={(e) =>
-                    setOtpFormData((prev) => ({ ...prev, otp: e.target.value }))
-                  }
-                  className="w-full px-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent text-center font-bold text-lg tracking-[0.25em]"
-                  placeholder="------"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Password Baru
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={otpFormData.password}
-                  onChange={(e) =>
-                    setOtpFormData((prev) => ({
-                      ...prev,
-                      password: e.target.value,
-                    }))
-                  }
-                  className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
-                  placeholder="Minimal 8 karakter"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                ) : isVerifyingOtp ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Memproses...
+                    </>
                   ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Konfirmasi Password Baru
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={otpFormData.confirmPassword}
-                  onChange={(e) =>
-                    setOtpFormData((prev) => ({
-                      ...prev,
-                      confirmPassword: e.target.value,
-                    }))
-                  }
-                  className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
-                  placeholder="Ulangi password baru"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowOtpForm(false);
-                  setShowForgotPassword(true);
-                  setErrors([]);
-                  setSuccessMsg(null);
-                }}
-                className="flex-1 py-4 border border-gray-300 text-gray-700 rounded-2xl font-semibold hover:bg-gray-50 transition-colors"
-              >
-                Kembali
-              </button>
-              <button
-                type="submit"
-                disabled={isVerifyingOtp}
-                className="flex-1 bg-[#e84741] text-white py-4 rounded-2xl font-semibold hover:bg-[#e84741]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isVerifyingOtp ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Memproses...
-                  </>
-                ) : (
-                  "Ubah Password"
+                  showForgotPassword ? "Kirim Kode Reset" : "Ubah Password"
                 )}
               </button>
             </div>
@@ -622,18 +572,20 @@ export default function LoginPage() {
     );
   }
 
-  // Rest of the login/register UI remains unchanged
+  // Login / Register Form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#DFF19D]/20 via-[#BFF0F5]/20 to-[#F6CCD0]/20 flex items-center justify-center p-6">
-      <div className="absolute top-20 left-10 w-20 h-20 bg-[#6B6B6B]/50 rounded-full opacity-60 animate-pulse" />
-      <div className="absolute bottom-32 right-16 w-16 h-16 bg-[#e84741]/50 rounded-full opacity-60 animate-pulse delay-1000" />
-      <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-[#000000]/50 rounded-full opacity-40 animate-pulse delay-500" />
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundImage: `linear-gradient(to br, ${ACCENT_COLOR}20, #FFFFFF20, ${PRIMARY_COLOR}20)` }}>
+      <div className="absolute top-20 left-10 w-20 h-20 rounded-full opacity-60 animate-pulse" style={{ backgroundColor: `${ACCENT_COLOR}90` }} />
+      <div className="absolute bottom-32 right-16 w-16 h-16 rounded-full opacity-60 animate-pulse delay-1000" style={{ backgroundColor: `${PRIMARY_COLOR}90` }}/>
+      <div className="absolute top-1/2 left-1/4 w-12 h-12 rounded-full opacity-40 animate-pulse delay-500" style={{ backgroundColor: `${ACCENT_COLOR}50` }}/>
       <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div className="bg-[#e84741] p-8 lg:p-12 flex flex-col justify-center text-white relative overflow-hidden">
+        
+        {/* === Left Panel (Brand Info) === */}
+        <div className="p-8 lg:p-12 flex flex-col justify-center text-white relative overflow-hidden" style={{ backgroundColor: PRIMARY_COLOR }}>
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 right-10 w-32 h-32 bg-[#e84741] rounded-full" />
-            <div className="absolute bottom-20 left-10 w-24 h-24 bg-[#e84741] rounded-full" />
-            <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-[#e84741] rounded-full" />
+            <div className="absolute top-10 right-10 w-32 h-32 rounded-full" style={{ backgroundColor: ACCENT_COLOR }}/>
+            <div className="absolute bottom-20 left-10 w-24 h-24 rounded-full" style={{ backgroundColor: ACCENT_COLOR }}/>
+            <div className="absolute top-1/2 right-1/4 w-16 h-16 rounded-full" style={{ backgroundColor: ACCENT_COLOR }}/>
           </div>
 
           <div className="relative z-10">
@@ -641,7 +593,7 @@ export default function LoginPage() {
               variant="outline"
               size="sm"
               onClick={() => router.push("/")}
-              className="text-[#e84741] cursor-pointer shadow-lg border-white/20 hover:bg-[#e84741]/20 hover:text-[#FFFFFF] bg-white transition-colors mb-6"
+              className="text-white cursor-pointer shadow-lg border-white/20 hover:opacity-90 bg-white/20 transition-colors mb-6"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Kembali
@@ -649,19 +601,20 @@ export default function LoginPage() {
 
             <div className="flex items-center gap-3 mb-8">
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
+                {/* Ganti src ke logo properti biru */}
                 <Image
-                  src="/logo-koperasi-merah-putih-online.webp"
-                  alt="Koperasi Merah Putih"
+                  src="/nestar.webp" 
+                  alt="NESTAR Properti"
                   width={50}
                   height={50}
                 />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">
-                  Koperasi Merah Putih
+                  NESTAR
                 </h1>
                 <p className="text-white/80 text-sm">
-                  Mandiri, Sejahtera, & Berdaya
+                  Jembatan Nyaman Menuju Hunian Impian Anda
                 </p>
               </div>
             </div>
@@ -670,68 +623,70 @@ export default function LoginPage() {
               <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight text-white">
                 {isLogin
                   ? "Selamat Datang Kembali!"
-                  : "Bergabung dengan Koperasi Merah Putih"}
+                  : "Bergabung dengan Portal Properti"}
               </h2>
               <p className="text-white/80 text-lg">
                 {isLogin
-                  ? "Masuk untuk mengelola keuangan Anda atau bertransaksi di marketplace."
-                  : "Daftar sekarang dan nikmati layanan simpan pinjam serta jadi seller di marketplace kami."}
+                  ? "Masuk untuk melanjutkan pencarian rumah, kelola wishlist, dan hubungi agen."
+                  : "Daftar sekarang untuk mendapatkan akses ke ribuan listing terverifikasi dan simulasi KPR akurat."}
               </p>
             </div>
 
+            {/* Benefit Icons Properti */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Landmark className="w-6 h-6 text-white" />
-                <span className="text-white/80">Layanan Simpan Pinjam</span>
+                <Home className="w-6 h-6 text-white" />
+                <span className="text-white/80">Listing Properti Terverifikasi</span>
               </div>
               <div className="flex items-center gap-3">
-                <Store className="w-6 h-6 text-white" />
-                <span className="text-white/80">Marketplace UMKM Lokal</span>
+                <Briefcase className="w-6 h-6 text-white" />
+                <span className="text-white/80">Akses Agen Profesional</span>
               </div>
               <div className="flex items-center gap-3">
-                <Users className="w-6 h-6 text-white" />
-                <span className="text-white/80">
-                  Komunitas Anggota yang Kuat
-                </span>
+                <MapPin className="w-6 h-6 text-white" />
+                <span className="text-white/80">Simulasi KPR & Lokasi Akurat</span>
               </div>
             </div>
 
+            {/* Stats Properti */}
             <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-white/20">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">2.5K+</div>
-                <div className="text-white/50 text-sm">Anggota Aktif</div>
+                <div className="text-2xl font-bold text-white">10K+</div>
+                <div className="text-white/50 text-sm">Listing Aktif</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">100+</div>
-                <div className="text-white/50 text-sm">UMKM Terdaftar</div>
+                <div className="text-2xl font-bold text-white">250+</div>
+                <div className="text-white/50 text-sm">Agen Berlisensi</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">4.9</div>
-                <div className="text-white/50 text-sm">Rating Layanan</div>
+                <div className="text-2xl font-bold text-white">9</div>
+                <div className="text-white/50 text-sm">Kota Besar</div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* === Right Panel (Form) === */}
         <div className="p-8 lg:p-12">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-[#e84741]/10 px-4 py-2 rounded-full mb-4">
-                <Sparkles className="w-4 h-4 text-[#e84741]" />
-                <span className="text-sm font-medium text-[#e84741]">
-                  {isLogin ? "Masuk Anggota" : "Daftar Anggota"}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4" style={{ backgroundColor: `${PRIMARY_COLOR}10` }}>
+                <ShieldCheck className="w-4 h-4" style={{ color: PRIMARY_COLOR }}/>
+                <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>
+                  {isLogin ? "Masuk Portal" : "Daftar Akun Baru"}
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {isLogin ? "Masuk ke Akun Anda" : "Buat Akun Anggota Baru"}
+                {isLogin ? "Masuk ke Akun Anda" : "Buat Akun Pencari Properti"}
               </h3>
               <p className="text-gray-600">
                 {isLogin
-                  ? "Masukkan email dan password untuk melanjutkan"
-                  : "Lengkapi data di bawah untuk menjadi anggota"}
+                  ? "Akses dashboard properti dan mulai pencarian Anda"
+                  : "Lengkapi data di bawah untuk terhubung dengan agen kami"}
               </p>
             </div>
 
+            {/* Error/Success Messages (dipertahankan) */}
             {errors.length > 0 && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
                 <div className="flex items-start gap-3">
@@ -773,7 +728,7 @@ export default function LoginPage() {
                           email: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="nama@email.com"
                     />
                   </div>
@@ -794,7 +749,7 @@ export default function LoginPage() {
                           password: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="••••••••"
                     />
                     <button
@@ -815,7 +770,8 @@ export default function LoginPage() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      className="w-4 h-4 text-[#e84741] border-gray-300 rounded focus:ring-[#e84741]"
+                      className="w-4 h-4 border-gray-300 rounded focus:ring-blue-600"
+                      style={{ color: PRIMARY_COLOR }}
                     />
                     <span className="ml-2 text-sm text-gray-600">
                       Ingat saya
@@ -829,7 +785,8 @@ export default function LoginPage() {
                       setSuccessMsg(null);
                       setForgotPasswordData({ email: loginData.email });
                     }}
-                    className="text-sm text-[#e84741] hover:underline"
+                    className="text-sm hover:underline"
+                    style={{ color: PRIMARY_COLOR }}
                   >
                     Lupa password?
                   </button>
@@ -838,7 +795,8 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-full bg-[#e84741] text-white py-4 rounded-2xl font-semibold hover:bg-[#e84741]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full text-white py-4 rounded-2xl font-semibold hover:opacity-90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   {isLoggingIn ? (
                     <>
@@ -847,7 +805,7 @@ export default function LoginPage() {
                     </>
                   ) : (
                     <>
-                      Masuk
+                      Masuk ke Portal
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
@@ -870,7 +828,7 @@ export default function LoginPage() {
                           fullName: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="Masukkan nama lengkap"
                     />
                   </div>
@@ -891,7 +849,7 @@ export default function LoginPage() {
                           email: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="nama@email.com"
                     />
                   </div>
@@ -912,7 +870,7 @@ export default function LoginPage() {
                           phone: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="+62 812 3456 7890"
                     />
                   </div>
@@ -933,7 +891,7 @@ export default function LoginPage() {
                           password: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="Minimal 8 karakter"
                     />
                     <button
@@ -965,7 +923,7 @@ export default function LoginPage() {
                           confirmPassword: e.target.value,
                         }))
                       }
-                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#e84741] focus:border-transparent"
+                      className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                       placeholder="Ulangi password"
                     />
                     <button
@@ -993,15 +951,16 @@ export default function LoginPage() {
                         agreeToTerms: e.target.checked,
                       }))
                     }
-                    className="w-4 h-4 text-[#e84741] border-gray-300 rounded focus:ring-[#e84741] mt-1"
+                    className="w-4 h-4 border-gray-300 rounded focus:ring-blue-600 mt-1"
+                    style={{ color: PRIMARY_COLOR }}
                   />
                   <label htmlFor="terms" className="ml-3 text-sm text-gray-600">
                       Saya setuju dengan{" "}
-                      {/* ++ Step 4: Change links to buttons that open the modal */}
                       <button
                         type="button"
                         onClick={() => setModalContent(TERMS_CONTENT)}
-                        className="text-[#e84741] hover:underline font-medium"
+                        className="hover:underline font-medium"
+                        style={{ color: PRIMARY_COLOR }}
                       >
                         Syarat & Ketentuan
                       </button>{" "}
@@ -1009,7 +968,8 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setModalContent(PRIVACY_POLICY_CONTENT)}
-                        className="text-[#e84741] hover:underline font-medium"
+                        className="hover:underline font-medium"
+                        style={{ color: PRIMARY_COLOR }}
                       >
                         Kebijakan Privasi
                       </button>
@@ -1019,7 +979,8 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isRegistering}
-                  className="w-full bg-[#e84741] text-white py-4 rounded-2xl font-semibold hover:bg-[#e84741]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full text-white py-4 rounded-2xl font-semibold hover:opacity-90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ backgroundColor: PRIMARY_COLOR }}
                 >
                   {isRegistering ? (
                     <>
@@ -1028,7 +989,7 @@ export default function LoginPage() {
                     </>
                   ) : (
                     <>
-                      Daftar Sekarang
+                      Daftar Akun Properti
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
@@ -1045,7 +1006,8 @@ export default function LoginPage() {
                     setErrors([]);
                     setSuccessMsg(null);
                   }}
-                  className="text-[#e84741] font-semibold hover:underline"
+                  className="font-semibold hover:underline"
+                  style={{ color: PRIMARY_COLOR }}
                 >
                   {isLogin ? "Daftar di sini" : "Masuk di sini"}
                 </button>
@@ -1055,12 +1017,12 @@ export default function LoginPage() {
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
-                  <Shield className="w-4 h-4 text-[#e84741]" />
-                  <span>SSL Secure</span>
+                  <ShieldCheck className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                  <span>Data Terjamin Aman</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-[#e84741]" />
-                  <span>Data Terlindungi</span>
+                  <CheckCircle className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                  <span>Listing Terverifikasi</span>
                 </div>
               </div>
             </div>

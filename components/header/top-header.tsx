@@ -4,28 +4,27 @@
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useMemo } from "react";
-// ✨ 1. Impor ikon MessageSquare
 import {
   Menu,
   X,
-  ShoppingCart,
   User,
   Globe,
   MessageSquare,
+  ShoppingBag,
+  Home, // Mengganti ShoppingCart dengan Home/Properti
+  Calculator, // Mengganti ikon PPOB/Service dengan Kalkulator
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import useCart from "@/hooks/use-cart";
+import useCart from "@/hooks/use-cart"; // Tetap pertahankan, meskipun tidak digunakan, agar kode mudah dikembalikan
 import Image from "next/image";
 
 interface TranslationContent {
   home: string;
   about: string;
-  products: string;
-  service: string;
-  testimonials: string;
+  listings: string;
+  kpr: string;
   news: string;
-  ppob: string;
   tagline: string;
   switchLanguage: string;
 }
@@ -45,89 +44,69 @@ export default function Header() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const cartItems = useCart((s) => s.cartItems);
-  const cartCount = useMemo(
-    () => cartItems.reduce((t, item) => t + item.quantity, 0),
-    [cartItems]
-  );
+  // Warna NESTAR Properti
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+
+  // Hapus semua logika dan state Cart karena tidak relevan
+  // const cartItems = useCart((s) => s.cartItems);
+  // const cartCount = useMemo(() => cartItems.reduce((t, item) => t + item.quantity, 0), [cartItems]);
 
   const translations: Translations = {
     id: {
       home: "Beranda",
-      products: "Produk",
-      service: "Layanan",
-      ppob: "PPOB",
+      listings: "Properti Dijual", // Mengganti Products
+      kpr: "Simulasi KPR", // Mengganti Service/PPOB
       about: "Tentang Kami",
       news: "Artikel",
-      testimonials: "Testimoni",
-      tagline: "Koperasi Merah Putih",
+      tagline: "NESTAR Properti",
       switchLanguage: "Ganti ke English",
     },
     en: {
       home: "Home",
-      products: "Products",
-      service: "Layanan",
-      ppob: "PPOB",
+      listings: "Property Listings",
+      kpr: "KPR Simulation",
       about: "About Us",
       news: "Articles",
-      testimonials: "Testimonials",
-      tagline: "Koperasi Merah Putih",
+      tagline: "NESTAR Property",
       switchLanguage: "Switch to Bahasa",
     },
   };
 
   const t = translations[language];
 
+  // Menu Properti yang Relevan
   const menuItems = [
+    { name: t.listings, href: "/product" },
+    { name: t.kpr, href: "/kpr-simulation" },
     { name: t.about, href: "/about" },
-    { name: t.products, href: "/product" },
-    { name: t.ppob, href: "/ppob" },
-    { name: t.service, href: "/service" },
     { name: t.news, href: "/news" },
   ];
 
   const menuItemColors = [
     {
+      name: t.listings,
+      href: "/product",
+      hoverBg: "hover:bg-blue-100/50",
+      activeBg: "bg-blue-100",
+    },
+    {
+      name: t.kpr,
+      href: "/kpr-simulation",
+      hoverBg: "hover:bg-blue-100/50",
+      activeBg: "bg-blue-100",
+    },
+    {
       name: t.about,
       href: "/about",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
-    },
-    {
-      name: t.products,
-      href: "/product",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
-    },
-    {
-      name: t.service,
-      href: "/service",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
-    },
-    {
-      name: t.ppob,
-      href: "/how-to-order",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
+      hoverBg: "hover:bg-blue-100/50",
+      activeBg: "bg-blue-100",
     },
     {
       name: t.news,
       href: "/news",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
-    },
-    {
-      name: t.testimonials,
-      href: "/testimonials",
-      hoverBg: "hover:bg-[#F3F4F6]",
-      activeBg: "bg-[#F3F4F6]",
-      textColor: "text-[#6B7280]",
+      hoverBg: "hover:bg-blue-100/50",
+      activeBg: "bg-blue-100",
     },
   ];
 
@@ -160,9 +139,9 @@ export default function Header() {
     }
   };
 
+  // Fungsi Cart tidak diperlukan, tapi diubah agar tidak error jika dipanggil
   const handleCartClick = () => {
-    window.location.assign("/cart");
-    window.dispatchEvent(new CustomEvent("openCart"));
+    router.push("/cart"); // Ganti ke halaman cart
   };
 
   const handleUserClick = () => {
@@ -194,19 +173,20 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="flex items-center gap-1">
+                  {/* Ganti src ke logo properti biru */}
                   <Image
-                    src="/logo-koperasi-merah-putih-online.webp"
-                    alt="Koperasi Merah Putih Logo"
+                    src="/nestar.webp"
+                    alt="NESTAR Properti"
                     width={50}
                     height={50}
                     className="flex-shrink-0 object-contain"
                   />
                   <div className="hidden sm:flex flex-col leading-tight">
                     <h2 className="text-lg font-semibold text-gray-800">
-                      Koperasi Merah Putih
+                      NESTAR
                     </h2>
                     <p className="text-xs text-gray-600 mt-[-5px]">
-                      Simpan Pinjam & Marketplace
+                      Jembatan Nyaman Menuju Hunian Impian Anda.
                     </p>
                   </div>
                 </div>
@@ -221,9 +201,16 @@ export default function Header() {
                   href={item.href}
                   className={`relative font-semibold transition-all duration-300 py-3 px-4 rounded-xl ${
                     isActiveLink(item.href)
-                      ? "bg-[#E53935]/10 text-[#E53935] shadow-sm"
+                      ? "shadow-sm" // Hanya shadow
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
+                  // Terapkan warna Biru Gelap/Muda
+                  style={{
+                    backgroundColor: isActiveLink(item.href)
+                      ? `${ACCENT_COLOR}15`
+                      : "",
+                    color: isActiveLink(item.href) ? PRIMARY_COLOR : "",
+                  }}
                 >
                   {item.name}
                 </Link>
@@ -235,11 +222,15 @@ export default function Header() {
               {/* Language Toggle - Desktop */}
               <button
                 onClick={toggleLanguage}
-                className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-[#6B6B6B]/10 hover:bg-[#6B6B6B]/20 transition-all duration-300 shadow-sm"
+                className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 shadow-sm"
+                style={{
+                  backgroundColor: `${PRIMARY_COLOR}10`,
+                  color: PRIMARY_COLOR,
+                }}
                 title={t.switchLanguage}
               >
-                <Globe className="w-4 h-4 text-[#6B6B6B]" />
-                <span className="text-sm font-bold text-[#6B6B6B]">
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-bold">
                   {language.toUpperCase()}
                 </span>
               </button>
@@ -250,32 +241,18 @@ export default function Header() {
                 className="p-3 rounded-xl hover:bg-gray-100 transition-all duration-300"
                 aria-label="User"
               >
-                <User className="w-5 h-5 text-[#6B6B6B]" />
+                <User className="w-5 h-5 text-gray-600" />
               </button>
 
-              {/* ✨ BARU: Ikon Chat, hanya muncul jika sudah login */}
-              {status === "authenticated" && (
-                <button
-                  onClick={() => router.push("/chat")}
-                  className="p-3 rounded-xl hover:bg-gray-100 transition-all duration-300"
-                  aria-label="Chat"
-                >
-                  <MessageSquare className="w-5 h-5 text-[#6B6B6B]" />
-                </button>
-              )}
-
-              {/* Cart */}
+              {/* Cart diganti Home/Properti */}
               <button
-                onClick={handleCartClick}
+                onClick={handleCartClick} // Tetap gunakan fungsi ini, isinya sudah diubah
                 className="relative p-3 rounded-xl hover:bg-gray-100 transition-all duration-300"
-                aria-label="Cart"
+                aria-label="Lihat Properti"
               >
-                <ShoppingCart className="w-5 h-5 text-[#6B6B6B]" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#E53935] text-white text-xs font-bold min-w-[20px] h-[20px] rounded-full flex items-center justify-center border-2 border-white shadow-lg">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
+                {/* Mengganti ShoppingCart dengan ikon Home */}
+                <ShoppingBag className="w-5 h-5 text-gray-600" />
+                {/* Menghilangkan badge cartCount */}
               </button>
 
               {/* Mobile Menu Button */}
@@ -309,25 +286,29 @@ export default function Header() {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Mobile Header */}
-          <div className="p-6 border-b border-[#6B6B6B]/20 bg-gradient-to-r from-[#E53935]/10 to-[#FFFFFF]/10">
+          <div
+            className="p-6 border-b border-gray-200/50"
+            style={{ backgroundImage: `linear-gradient(to right, ${ACCENT_COLOR}10, #FFFFFF10)` }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#E53935]/80 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold">Y</span>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: PRIMARY_COLOR }}>
+                  <span className="text-white font-bold">N</span>
                 </div>
                 <div>
-                  <h2 className="font-bold bg-gradient-to-r from-[#E53935] to-[#6B6B6B] bg-clip-text text-transparent">
-                    Koperasi Merah Putih
+                  <h2 className="font-bold text-gray-800">
+                    NESTAR
                   </h2>
-                  <p className="text-xs text-[#6B6B6B]/70">{t.tagline}</p>
+                  <p className="text-xs text-gray-600/70">{t.tagline}</p>
                 </div>
               </div>
               <button
                 onClick={toggleMobileMenu}
-                className="p-2 rounded-lg hover:bg-[#E53935]/10 transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{ color: PRIMARY_COLOR }}
                 aria-label="Close mobile menu"
               >
-                <X className="w-5 h-5 text-[#6B6B6B]" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -342,7 +323,7 @@ export default function Header() {
                 className={`flex items-center gap-4 p-4 rounded-2xl font-semibold transition-all duration-300 group ${
                   isActiveLink(item.href)
                     ? `${item.activeBg} text-gray-700 border-2 border-gray-300 shadow-md`
-                    : `text-gray-700 ${item.hoverBg} hover:shadow-sm`
+                    : `${item.hoverBg} text-gray-700 hover:shadow-sm`
                 }`}
                 style={{
                   animationDelay: `${index * 50}ms`,
@@ -360,7 +341,7 @@ export default function Header() {
                 />
                 <span className="flex-1">{item.name}</span>
                 {isActiveLink(item.href) && (
-                  <div className="w-1 h-6 bg-gray-600 rounded-full shadow-sm" />
+                  <div className="w-1 h-6 rounded-full shadow-sm" style={{ backgroundColor: PRIMARY_COLOR }} />
                 )}
               </Link>
             ))}
@@ -368,21 +349,28 @@ export default function Header() {
             {/* Language Toggle - Mobile */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-4 p-4 w-full rounded-2xl text-[#6B6B6B] hover:bg-[#E53935]/10 font-semibold transition-all duration-300 mt-6 border-2 border-[#6B6B6B]/30 bg-[#FFFFFF]/10"
+              className="flex items-center gap-4 p-4 w-full rounded-2xl text-gray-700 font-semibold transition-all duration-300 mt-6 border-2 border-gray-300/50"
+              style={{ backgroundColor: `${PRIMARY_COLOR}10` }}
             >
-              <Globe className="w-5 h-5 text-[#6B6B6B]" />
+              <Globe className="w-5 h-5 text-gray-600" />
               <span className="flex-1 text-left">{t.switchLanguage}</span>
-              <span className="text-sm font-bold text-white bg-[#E53935] px-3 py-1 rounded-lg shadow-md">
+              <span className="text-sm font-bold text-white px-3 py-1 rounded-lg shadow-md" style={{ backgroundColor: ACCENT_COLOR }}>
                 {language === "id" ? "EN" : "ID"}
               </span>
             </button>
           </div>
 
           {/* Mobile Footer */}
-          <div className="p-6 border-t border-[#6B6B6B]/20 bg-gradient-to-r from-[#E53935]/10 to-[#FFFFFF]/10">
+          <div
+            className="p-6 border-t border-gray-200/50"
+            style={{ backgroundImage: `linear-gradient(to right, ${ACCENT_COLOR}10, #FFFFFF10)` }}
+          >
             <div className="flex items-center justify-center gap-4">
-              <button className="flex-1 bg-[#E53935]/80 text-white py-4 rounded-2xl font-bold hover:from-[#E53935]/70 hover:to-[#6B6B6B]/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                Belanja Sekarang
+              <button
+                className="flex-1 text-white py-4 rounded-2xl font-bold hover:opacity-90 transition-all duration-300 shadow-lg transform hover:scale-[1.02]"
+                style={{ backgroundColor: PRIMARY_COLOR }}
+              >
+                Mulai Cari Properti
               </button>
             </div>
           </div>

@@ -275,7 +275,7 @@ export default function KasirPage() {
                 )}
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Sistem Point of Sale Koperasi Merah Putih
+                Sistem Point of Sale NESTAR
               </p>
             </div>
             <div className="flex items-center gap-4">

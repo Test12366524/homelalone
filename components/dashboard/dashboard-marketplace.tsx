@@ -68,7 +68,6 @@ export default function MarketplaceDashboardPage() {
   // API calls
   const { data: dashboardHead, isLoading: isLoadingHead } = useGetDashboardHeadQuery();
   const { data: transactionChart, isLoading: isLoadingChart } = useGetTransactionChartQuery({ year: currentYear });
-  const { data: topSellers, isLoading: isLoadingSellers } = useGetTopSellersQuery();
   const { data: topProducts, isLoading: isLoadingProducts } = useGetTopProductsQuery();
 
   // Labels 12 bulan
@@ -85,11 +84,6 @@ export default function MarketplaceDashboardPage() {
     return transactionChart.map(item => item.total_order);
   }, [transactionChart]);
 
-  // Process top sellers data (limit to 5)
-  const top5Seller = useMemo(() => {
-    if (!topSellers) return [];
-    return topSellers.slice(0, 5);
-  }, [topSellers]);
 
   // Process top products data (limit to 5)
   const top5Product = useMemo(() => {
@@ -110,13 +104,6 @@ export default function MarketplaceDashboardPage() {
       icon: Users,
       color: "text-blue-600",
       bg: "bg-blue-100",
-    },
-    {
-      title: "Total Seller",
-      value: formatNumber(totalSeller),
-      icon: Store,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
     },
     {
       title: "Total Transaksi",
@@ -202,20 +189,6 @@ export default function MarketplaceDashboardPage() {
     },
   };
 
-  // Bar: Top 5 Seller (horizontal)
-  const topSellerData: ChartData<"bar"> = {
-    labels: top5Seller.map((s) => s.name),
-    datasets: [
-      {
-        label: "GMV (Rp)",
-        data: top5Seller.map((s) => s.amount),
-        backgroundColor: "rgba(99,102,241,0.6)", // indigo-500
-        borderColor: "rgba(99,102,241,1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
   const topSellerOptions: ChartOptions<"bar"> = {
     indexAxis: "y",
     responsive: true,
@@ -277,7 +250,7 @@ export default function MarketplaceDashboardPage() {
   };
 
   // Loading state
-  const isLoading = isLoadingHead || isLoadingChart || isLoadingSellers || isLoadingProducts;
+  const isLoading = isLoadingHead || isLoadingChart || isLoadingProducts;
 
   /* ===================== Render ===================== */
   if (isLoading) {
@@ -293,8 +266,8 @@ export default function MarketplaceDashboardPage() {
         </div>
         
         {/* Loading Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
@@ -394,23 +367,6 @@ export default function MarketplaceDashboardPage() {
           </CardHeader>
           <CardContent className="h-[260px]">
             <Line data={transaksiData} options={transaksiOptions} />
-          </CardContent>
-        </Card>
-
-        <Card className="h-80">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">
-              Grafik Top 5 Seller
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[260px]">
-            {top5Seller.length > 0 ? (
-              <Bar data={topSellerData} options={topSellerOptions} />
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                <p>Tidak ada data seller</p>
-              </div>
-            )}
           </CardContent>
         </Card>
 

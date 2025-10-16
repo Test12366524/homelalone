@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Koperasi Merah Putih",
+  title: "NESTAR",
   description: "Mewujudkan kemandirian dan kesejahteraan anggota melalui unit usaha simpan pinjam dan marketplace yang terintegrasi.",
   icons: {
-    icon: "/logo-koperasi-merah-putih-online.webp",
+    icon: "/nestar.webp",
   },
 };
 

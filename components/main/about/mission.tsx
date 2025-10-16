@@ -2,6 +2,9 @@
 import { motion } from "framer-motion";
 
 export default function Mission() {
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-6 lg:px-12 grid md:grid-cols-2 gap-12 items-center">
@@ -11,13 +14,13 @@ export default function Mission() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-[#6B6B6B] mb-6">
-            Visi & <span className="text-[#E53935]">Misi</span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-6">
+            Visi & <span style={{ color: PRIMARY_COLOR }}>Misi</span>
           </h2>
-          <p className="text-lg text-[#6B6B6B] leading-relaxed mb-6">
-            Koperasi Merah Putih hadir untuk mewujudkan kemandirian dan
-            kesejahteraan bagi seluruh anggota melalui ekosistem ekonomi yang
-            terintegrasi dan adil.
+          <p className="text-lg text-gray-600 leading-relaxed mb-6">
+            NESTAR hadir sebagai solusi teknologi properti terdepan,
+            menciptakan pengalaman jual beli rumah yang transparan, mudah,
+            dan penuh kepercayaan bagi setiap pengguna.
           </p>
         </motion.div>
 
@@ -28,21 +31,19 @@ export default function Mission() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-6"
         >
-          <div className="bg-white shadow-lg rounded-3xl p-6 border-l-4 border-[#E53935]">
-            <h3 className="text-2xl font-bold text-[#6B6B6B] mb-2">Visi</h3>
-            <p className="text-[#6B6B6B]">
-              Menjadi koperasi terdepan yang memberdayakan ekonomi anggota,
-              menciptakan kemandirian finansial, dan mendorong pertumbuhan
-              bisnis UMKM lokal.
+          {/* Visi Properti */}
+          <div className="bg-white shadow-lg rounded-3xl p-6 border-l-4" style={{ borderColor: PRIMARY_COLOR }}>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Visi</h3>
+            <p className="text-gray-600">
+              Menjadi portal properti digital **(PropTech)** nomor satu di Indonesia yang dikenal karena keandalan data, inovasi teknologi, dan layanan yang berorientasi pada kepuasan pelanggan.
             </p>
           </div>
-          <div className="bg-white shadow-lg rounded-3xl p-6 border-l-4 border-[#6B6B6B]">
-            <h3 className="text-2xl font-bold text-[#6B6B6B] mb-2">Misi</h3>
-            <p className="text-[#6B6B6B]">
-              Menyediakan layanan simpan pinjam yang mudah, cepat, dan
-              transparan. Mengembangkan platform marketplace yang efektif untuk
-              meningkatkan penjualan produk anggota. Memberikan edukasi dan
-              dukungan berkelanjutan untuk meningkatkan kapasitas usaha anggota.
+
+          {/* Misi Properti */}
+          <div className="bg-white shadow-lg rounded-3xl p-6 border-l-4" style={{ borderColor: ACCENT_COLOR }}>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Misi</h3>
+            <p className="text-gray-600">
+              Menyediakan listing properti yang 100% terverifikasi legalitasnya. Mengembangkan fitur simulasi KPR dan kalkulator finansial yang akurat. Menghubungkan pembeli dengan agen properti profesional berlisensi. Mengutamakan transparansi data dan proses transaksi digital yang aman.
             </p>
           </div>
         </motion.div>

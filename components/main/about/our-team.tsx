@@ -2,30 +2,34 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-const team = [
-  {
-    name: "Ayu Pratama",
-    role: "Ketua Koperasi",
-    image: "/avatars/1.jpeg",
-  },
-  {
-    name: "Rina Cahya",
-    role: "Manajer Simpan Pinjam",
-    image: "/avatars/2.jpeg",
-  },
-  {
-    name: "Nanda Putri",
-    role: "Koordinator Marketplace",
-    image: "/avatars/3.jpeg",
-  },
-  {
-    name: "Dewi Lestari",
-    role: "Manajer Keanggotaan",
-    image: "/avatars/4.jpeg",
-  },
-];
-
 export default function TeamSection() {
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const SECONDARY_TEXT_COLOR = "#4A5568"; // Abu-abu gelap
+
+  // Struktur tim disesuaikan untuk bisnis properti digital
+  const team = [
+    {
+      name: "Ayu Pratama",
+      role: "Chief Executive Officer (CEO)",
+      image: "/avatars/1.jpeg",
+    },
+    {
+      name: "Rina Cahya",
+      role: "Kepala Verifikasi Properti",
+      image: "/avatars/2.jpeg",
+    },
+    {
+      name: "Nanda Putri",
+      role: "Manajer Agen & Kemitraan",
+      image: "/avatars/3.jpeg",
+    },
+    {
+      name: "Dewi Lestari",
+      role: "Kepala Pengembangan Teknologi",
+      image: "/avatars/4.jpeg",
+    },
+  ];
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-6 lg:px-12">
@@ -36,13 +40,12 @@ export default function TeamSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-[#6B6B6B] mb-4">
-            Pengurus dan Tim{" "}
-            <span className="text-[#E53935]">Koperasi Merah Putih</span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4">
+            Tim Manajemen{" "}
+            <span style={{ color: PRIMARY_COLOR }}>NESTAR</span>
           </h2>
-          <p className="text-lg text-[#6B6B6B] max-w-2xl mx-auto">
-            Tim profesional berpengalaman yang berdedikasi untuk melayani
-            anggota dan memajukan koperasi.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Profesional berpengalaman di bidang properti, teknologi, dan hukum yang berdedikasi menciptakan pengalaman jual beli terbaik.
           </p>
         </motion.div>
 
@@ -64,10 +67,13 @@ export default function TeamSection() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="text-xl font-bold text-[#6B6B6B]">
+              <h3 className="text-xl font-bold text-gray-800">
                 {member.name}
               </h3>
-              <p className="text-[#E53935] font-medium">{member.role}</p>
+              {/* Warna peran menggunakan PRIMARY_COLOR (Biru Gelap) */}
+              <p className="font-medium" style={{ color: PRIMARY_COLOR }}>
+                {member.role}
+              </p>
             </motion.div>
           ))}
         </div>

@@ -158,7 +158,7 @@ export default function PPOBPage() {
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Nikmati kemudahan membayar tagihan dan membeli produk digital
-            langsung dari Koperasi Merah Putih. Cepat, aman, dan terpercaya.
+            langsung dari NESTAR. Cepat, aman, dan terpercaya.
           </p>
         </div>
       </section>

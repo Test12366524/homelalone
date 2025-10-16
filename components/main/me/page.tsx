@@ -22,15 +22,9 @@ import {
   CreditCard,
   Truck,
   Download,
-  Landmark,
-  Store,
-  UserPlus,
-  ShieldCheck,
-  TrendingUp,
-  Briefcase,
-  Users,
-  LandmarkIcon,
-  UsersRound,
+  Home, // Icon untuk Dashboard/Properti
+  Heart, // Icon untuk Wishlist
+  ShieldCheck, // Icon untuk Verifikasi
 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 
@@ -68,8 +62,8 @@ import type { Region } from "@/types/shop";
 import ProfileEditModal from "../profile-page/edit-modal";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import OrderDetailModal from "./order-detail-modal";
-import DaftarAnggotaModal from "./daftar-anggota-modal";
-import DaftarSellerModal from "./daftar-seller-modal";
+// import DaftarAnggotaModal from "./daftar-anggota-modal"; // DIHAPUS
+// import DaftarSellerModal from "./daftar-seller-modal"; // DIHAPUS
 import PaymentProofModal from "./payment-proof-modal";
 
 import {
@@ -92,8 +86,15 @@ import {
   isApiEnvelope,
   isTxnByIdData,
 } from "./transaction-by-id";
-import PPOBOrdersTab from "./ppob/ppob-orders-tab";
-import BankAccountsTab from "./user-bank/bank-accounts-tab";
+import { Button } from "@/components/ui/button";
+
+// import PPOBOrdersTab from "./ppob/ppob-orders-tab"; // DIHAPUS
+// import BankAccountsTab from "./user-bank/bank-accounts-tab"; // DIHAPUS
+
+// Warna NESTAR Properti
+const PRIMARY_COLOR = "#003366"; // Biru Gelap
+const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+const SECONDARY_TEXT_COLOR = "#4A5568"; // Abu-abu gelap
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -128,16 +129,9 @@ export default function ProfilePage() {
 
   const [paymentProofModalOpen, setPaymentProofModalOpen] = useState(false);
 
-  // Tabs
+  // Tabs - Menghilangkan tab Koperasi/Marketplace/Bank/PPOB
   const [activeTab, setActiveTab] = useState<
-    | "dashboard"
-    | "profile"
-    | "addresses"
-    | "bank_accounts"
-    | "orders"
-    | "anggota"
-    | "seller"
-    | "orders_ppob"
+    "dashboard" | "profile" | "addresses" | "orders" | "wishlist"
   >("dashboard");
 
   // Session basics
@@ -152,7 +146,7 @@ export default function ProfilePage() {
   const { uploadPaymentProof, isLoading: isUploadingProof } =
     useUploadPaymentProofMutation();
 
-  /** ---------------------------------- Transaksi ---------------------------------- */
+  /** ---------------------------------- Transaksi (Booking Properti) ---------------------------------- */
   const { data: txnResp, refetch: refetchTransactions } =
     useGetTransactionListQuery(
       { page: 1, paginate: 10, user_id: sessionId },
@@ -165,17 +159,19 @@ export default function ProfilePage() {
   );
 
   const orders: Order[] = useMemo(() => {
+    // Interpretasi: Transaction = Booking Properti
     return transactions.map((t) => {
       const items: OrderItem[] = (t.details || []).map((det, idx) => ({
         id: String(det.id ?? `${t.id}-${idx}`),
-        name: det.product?.name ?? det.product_name ?? "Produk",
+        name: det.product?.name ?? det.product_name ?? "Properti",
+        // Gunakan pickImageUrl, tetapi asumsikan gambar properti
         image: pickImageUrl(det as ApiTransactionDetail),
         quantity: det.quantity ?? 1,
         price: det.price ?? 0,
       }));
       return {
         id: String(t.id),
-        orderNumber: t.reference || `REF-${String(t.id)}`,
+        orderNumber: t.reference || `BOOK-${String(t.id)}`,
         date: t.created_at || new Date().toISOString(),
         status: mapTxnStatusToOrderStatus(t.status),
         total: t.total ?? 0,
@@ -216,7 +212,7 @@ export default function ProfilePage() {
     return undefined;
   }, [orderDetailResp]);
 
-  /** ---------------------------------- Address ---------------------------------- */
+  /** ---------------------------------- Address (dipertahankan) ---------------------------------- */
   const [addrModalOpen, setAddrModalOpen] = useState(false);
   const [addrEditId, setAddrEditId] = useState<number | null>(null);
 
@@ -312,7 +308,7 @@ export default function ProfilePage() {
       confirmButtonText: "Ya, hapus",
       cancelButtonText: "Batal",
       confirmButtonColor: "#d33",
-      cancelButtonColor: "#6b7280",
+      cancelButtonColor: PRIMARY_COLOR,
       showLoaderOnConfirm: true,
       allowOutsideClick: () => !Swal.isLoading(),
       preConfirm: async () => {
@@ -364,7 +360,7 @@ export default function ProfilePage() {
     email: sessionEmail,
     phone: "",
     birthDate: "1990-05-15",
-    image: session?.user?.image || "/api/placeholder/150/150",
+    image: session?.user?.image || DEFAULT_AVATAR,
     joinDate: "",
     totalOrders: 0,
     totalSpent: 0,
@@ -386,55 +382,25 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!transactions.length) return;
     const totalOrders = transactions.length;
-    const totalSpent = transactions.reduce((acc, t) => acc + (t.total ?? 0), 0);
+    const totalSpent = transactions.reduce(
+      (acc, t) => acc + (t.grand_total ?? 0),
+      0
+    );
     setUserProfile((prev) => ({ ...prev, totalOrders, totalSpent }));
   }, [transactions]);
 
   const { data: currentUserResp, refetch: refetchCurrentUser } =
     useGetCurrentUserQuery(undefined, {
-      refetchOnMountOrArgChange: true, // saat mount / arg berubah
-      refetchOnFocus: true, // saat tab kembali fokus
-      refetchOnReconnect: true, // saat koneksi balik lagi
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
     });
 
   // ---- Derive anggota status (0=PENDING, 1=APPROVED, 2=REJECTED) ----
-  type CurrentUserWithAnggota = {
-    anggota?: {
-      status?: number | null;
-      reference?: string | null;
-    } | null;
-  };
+  // DIHILANGKAN karena Anggota/Koperasi dihapus
+  const isAnggotaApproved = true; // Dianggap selalu true/relevan untuk user properti
 
-  useEffect(() => {
-    if (activeTab === "anggota" || activeTab === "seller") {
-      refetchCurrentUser();
-    }
-  }, [activeTab, refetchCurrentUser]);
-
-  const anggotaStatus = useMemo<number | null>(() => {
-    const u = currentUserResp as CurrentUserWithAnggota | undefined;
-    return u?.anggota?.status ?? null;
-  }, [currentUserResp]);
-
-  const isAnggotaApproved = anggotaStatus === 1;
-
-  const anggotaStatusText = useMemo(() => {
-    switch (anggotaStatus) {
-      case 0:
-        return "PENDING";
-      case 1:
-        return "APPROVED";
-      case 2:
-        return "REJECTED";
-      default:
-        return "TIDAK TERDAFTAR";
-    }
-  }, [anggotaStatus]);
-
-  const handleModalSuccess = async () => {
-    await refetchCurrentUser();
-  };
-
+  // ---- Update Profile State dari API ----
   useEffect(() => {
     const u = currentUserResp;
     if (!u) return;
@@ -448,18 +414,6 @@ export default function ProfilePage() {
     setUserProfile((prev) => ({
       ...prev,
       id: String(u.id ?? prev.id),
-      anggota: {
-        reference: u?.anggota?.reference ?? prev.anggota.reference,
-      },
-      shop:
-        typeof u.shop === "string"
-          ? u.shop
-          : Array.isArray(u.shop) && u.shop.length > 0 && u.shop[0]?.id
-          ? String(u.shop[0].id)
-          : u.shop == null
-          ? null
-          : prev.shop,
-      email_verified_at: u.email_verified_at ?? prev.email_verified_at,
       fullName: u.name ?? prev.fullName,
       email: u.email ?? prev.email,
       phone: u.phone ?? prev.phone,
@@ -530,10 +484,10 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     const result = await Swal.fire({
       title: "Konfirmasi Logout",
-      text: "Apakah Anda yakin ingin keluar?",
+      text: "Apakah Anda yakin ingin keluar dari portal NESTAR Properti?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
+      confirmButtonColor: PRIMARY_COLOR,
       cancelButtonColor: "#d33",
       confirmButtonText: "Ya, Keluar",
       cancelButtonText: "Batal",
@@ -560,38 +514,6 @@ export default function ProfilePage() {
     setImgSrc(wantedAvatar ? wantedAvatar : DEFAULT_AVATAR);
   }, [wantedAvatar]);
 
-  // --- Modals for new tabs ---
-  const [isDaftarAnggotaModalOpen, setIsDaftarAnggotaModalOpen] =
-    useState(false);
-  const [isDaftarSellerModalOpen, setIsDaftarSellerModalOpen] = useState(false);
-
-  const benefits = [
-    {
-      icon: <ShieldCheck className="w-8 h-8 text-[#6B6B6B]" />,
-      title: "Simpanan Aman & Menguntungkan",
-      description:
-        "Dana Anda dikelola secara profesional dan transparan dengan bagi hasil yang kompetitif.",
-    },
-    {
-      icon: <TrendingUp className="w-8 h-8 text-[#6B6B6B]" />,
-      title: "Akses Permodalan Mudah",
-      description:
-        "Dapatkan pinjaman dengan proses yang cepat dan bunga yang ringan untuk berbagai kebutuhan.",
-    },
-    {
-      icon: <Briefcase className="w-8 h-8 text-[#6B6B6B]" />,
-      title: "Program Kesejahteraan",
-      description:
-        "Ikut serta dalam berbagai program untuk meningkatkan kesejahteraan anggota dan keluarga.",
-    },
-    {
-      icon: <Users className="w-8 h-8 text-[#6B6B6B]" />,
-      title: "Membangun Jaringan",
-      description:
-        "Menjadi bagian dari komunitas yang solid dan saling mendukung satu sama lain.",
-    },
-  ];
-
   // Helpers for order detail modal
   const openOrderDetailModal = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -606,8 +528,12 @@ export default function ProfilePage() {
   const openPaymentProofModal = () => setPaymentProofModalOpen(true);
   const closePaymentProofModal = () => setPaymentProofModalOpen(false);
 
+  // Stats Properti yang disesuaikan
+  const totalBookings = userProfile.totalOrders;
+  const totalWishlistItems = 15; // Placeholder stat
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-[#DFF19D]/10 pt-24">
+    <div className="min-h-screen pt-24" style={{ backgroundImage: `linear-gradient(to br, #FFFFFF, ${ACCENT_COLOR}10)` }}>
       <div className="container mx-auto px-6 lg:px-6 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
@@ -623,7 +549,7 @@ export default function ProfilePage() {
                     onError={() => setImgSrc(DEFAULT_AVATAR)}
                     unoptimized
                   />
-                  <div className="absolute bottom-0 right-0 w-6 h-6 bg-[#6B6B6B] rounded-full flex items-center justify-center">
+                  <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: PRIMARY_COLOR }}>
                     <Camera
                       onClick={openEditProfileModal}
                       className="w-3 h-3 text-white cursor-pointer"
@@ -636,6 +562,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-600">{userProfile.email}</p>
               </div>
 
+              {/* Navigasi Profil Properti */}
               <nav className="space-y-2 mb-6">
                 {[
                   {
@@ -645,80 +572,39 @@ export default function ProfilePage() {
                   },
                   {
                     id: "profile",
-                    label: "Profil",
+                    label: "Profil Akun",
                     icon: <UserIcon className="w-5 h-5" />,
                   },
                   {
                     id: "addresses",
-                    label: "Alamat",
+                    label: "Alamat Kontak", // Diubah menjadi Alamat Kontak
                     icon: <MapPin className="w-5 h-5" />,
                   },
-                  {
-                    id: "bank_accounts",
-                    label: "Rekening Bank",
-                    icon: <LandmarkIcon className="w-5 h-5" />,
+                   {
+                    id: "wishlist",
+                    label: "Wishlist Properti",
+                    icon: <Heart className="w-5 h-5" />,
                   },
                   {
                     id: "orders",
-                    label: "Pesanan",
-                    icon: <Package className="w-5 h-5" />,
-                  },
-                  {
-                    id: "orders_ppob",
-                    label: "Riwayat PPOB",
-                    icon: <CreditCard className="w-5 h-5" />,
-                  },
-                  {
-                    id: "anggota",
-                    label: "Anggota Koperasi",
-                    icon: <UsersRound className="w-5 h-5" />,
-                  },
-                  {
-                    id: "seller",
-                    label: "Seller",
-                    icon: <Store className="w-5 h-5" />,
+                    label: "Riwayat Booking", // Diubah menjadi Riwayat Booking
+                    icon: <Home className="w-5 h-5" />,
                   },
                 ].map((tab) => {
-                  const disabled = tab.id === "seller" && !isAnggotaApproved;
                   return (
                     <button
                       key={tab.id}
-                      disabled={disabled}
-                      onClick={() => {
-                        if (tab.id === "seller" && !isAnggotaApproved) {
-                          Swal.fire({
-                            icon: "info",
-                            title: "Akses Seller Terkunci",
-                            text:
-                              `Menu Seller hanya bisa diakses jika status anggota Anda APPROVED. ` +
-                              `Status saat ini: ${anggotaStatusText}. ` +
-                              `Silakan selesaikan pendaftaran atau menunggu persetujuan admin.`,
-                            confirmButtonText: "Mengerti",
-                          });
-                          return;
-                        }
-                        setActiveTab(
-                          tab.id as
-                            | "dashboard"
-                            | "profile"
-                            | "addresses"
-                            | "orders"
-                            | "anggota"
-                            | "seller"
-                        );
-                      }}
-                      title={
-                        disabled
-                          ? `Menu Seller terkunci. Status anggota: ${anggotaStatusText}`
-                          : tab.label
-                      }
+                      onClick={() => setActiveTab(tab.id as typeof activeTab)}
                       className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl font-medium transition-all duration-300
-        ${
-          activeTab === (tab.id as typeof activeTab)
-            ? "bg-[#6B6B6B] text-white shadow-lg"
-            : "text-gray-700 hover:bg-[#6B6B6B]/10 hover:text-[#6B6B6B]"
-        }
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                      ${
+                        activeTab === tab.id
+                          ? "text-white shadow-lg"
+                          : "text-gray-700 hover:text-white hover:bg-opacity-80"
+                      }`}
+                      style={{
+                        backgroundColor: activeTab === tab.id ? PRIMARY_COLOR : 'transparent',
+                        color: activeTab === tab.id ? 'white' : SECONDARY_TEXT_COLOR
+                      }}
                     >
                       {tab.icon}
                       {tab.label}
@@ -739,96 +625,89 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Main */}
+          {/* Main Content */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-3xl p-8 shadow-lg">
-              {/* Dashboard */}
+              
+              {/* Dashboard Properti */}
               {activeTab === "dashboard" && (
                 <div className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gradient-to-r from-white via-[#F44336]/10 to-[#F44336]/30 rounded-2xl p-6 text-[#B71C1C] shadow-lg border border-[#F44336]/30">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Ringkasan Properti Anda</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    {/* Stat 1: Total Booking */}
+                    <div className="rounded-2xl p-6 text-white shadow-lg border" style={{ backgroundColor: PRIMARY_COLOR, borderColor: PRIMARY_COLOR }}>
                       <div className="flex items-center gap-3 mb-3">
-                        <CreditCard className="w-6 h-6 text-[#B71C1C]" />
-                        <span className="font-semibold">
-                          Total Belanja Marketplace
-                        </span>
+                        <Home className="w-6 h-6 text-white" />
+                        <span className="font-semibold">Riwayat Booking</span>
                       </div>
                       <div className="text-3xl font-bold">
-                        {new Intl.NumberFormat("id-ID", {
+                        {totalBookings} Transaksi
+                      </div>
+                      <div className="text-white/80 text-sm">
+                        Total properti yang di-booking
+                      </div>
+                    </div>
+
+                    {/* Stat 2: Total Wishlist */}
+                    <div className="rounded-2xl p-6 text-gray-800 shadow-lg border" style={{ backgroundColor: ACCENT_COLOR + '20', borderColor: ACCENT_COLOR }}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Heart className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                        <span className="font-semibold" style={{ color: PRIMARY_COLOR }}>Wishlist</span>
+                      </div>
+                      <div className="text-3xl font-bold text-gray-900">
+                        {totalWishlistItems} Properti
+                      </div>
+                      <div className="text-gray-600 text-sm">
+                        Properti yang tersimpan di daftar favorit
+                      </div>
+                    </div>
+                    
+                     {/* Stat 3: Total Pengeluaran / Booking Fee */}
+                    <div className="rounded-2xl p-6 text-gray-800 shadow-lg border" style={{ backgroundColor: PRIMARY_COLOR + '10', borderColor: PRIMARY_COLOR + '30' }}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <CreditCard className="w-6 h-6" style={{ color: PRIMARY_COLOR }} />
+                        <span className="font-semibold" style={{ color: PRIMARY_COLOR }}>Total Pembayaran</span>
+                      </div>
+                      <div className="text-3xl font-bold text-gray-900">
+                         {new Intl.NumberFormat("id-ID", {
                           style: "currency",
                           currency: "IDR",
                           minimumFractionDigits: 0,
                         }).format(userProfile.totalSpent)}
                       </div>
-                      <div className="text-[#B71C1C]/80 text-sm">
-                        Total transaksi di marketplace
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-white via-[#F44336]/10 to-[#F44336]/30 rounded-2xl p-6 text-[#B71C1C] shadow-lg border border-[#F44336]/30">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Package className="w-6 h-6 text-[#B71C1C]" />
-                        <span className="font-semibold">Total Keranjang</span>
-                      </div>
-                      <div className="text-3xl font-bold">
-                        {(orders || []).reduce(
-                          (acc, order) =>
-                            acc +
-                            order.items.reduce(
-                              (sum, item) => sum + item.quantity,
-                              0
-                            ),
-                          0
-                        )}{" "}
-                        produk
-                      </div>
-                      <div className="text-[#B71C1C]/80 text-sm">
-                        Total nominal:{" "}
-                        <span className="font-semibold">
-                          {new Intl.NumberFormat("id-ID", {
-                            style: "currency",
-                            currency: "IDR",
-                            minimumFractionDigits: 0,
-                          }).format(
-                            (orders || []).reduce(
-                              (acc, order) =>
-                                acc +
-                                order.items.reduce(
-                                  (sum, item) =>
-                                    sum + item.price * item.quantity,
-                                  0
-                                ),
-                              0
-                            )
-                          )}
-                        </span>
+                      <div className="text-gray-600 text-sm">
+                        Total biaya (booking fee & Dp awal)
                       </div>
                     </div>
                   </div>
 
-                  <div>
+                  <div className="mt-8 pt-8 border-t border-gray-200">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-bold text-gray-900">
-                        Pesanan Terbaru
+                        Booking Terbaru
                       </h3>
                       <button
                         onClick={() => setActiveTab("orders")}
-                        className="text-[#6B6B6B] font-semibold hover:underline"
+                        className="font-semibold hover:underline"
+                        style={{ color: PRIMARY_COLOR }}
                       >
                         Lihat Semua
                       </button>
                     </div>
 
                     <div className="space-y-4">
+                      {/* Mengubah tampilan Pesanan Terbaru menjadi Booking */}
                       {(orders || []).slice(0, 3).map((order) => (
                         <div
                           key={order.id}
-                          className="border border-gray-200 rounded-2xl p-4 hover:border-[#6B6B6B] transition-colors"
+                          className="border border-gray-200 rounded-2xl p-4 hover:border-gray-400 transition-colors cursor-pointer"
+                          onClick={() => openOrderDetailModal(order.id)}
                         >
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center justify-between mb-1">
                             <div>
                               <h4 className="font-semibold text-gray-900">
-                                #{order.orderNumber}
+                                #BOOK-{order.orderNumber}
                               </h4>
                               <p className="text-sm text-gray-600">
                                 {new Date(order.date).toLocaleDateString(
@@ -837,7 +716,7 @@ export default function ProfilePage() {
                               </p>
                             </div>
                             <div className="text-right">
-                              <div className="font-bold text-[#6B6B6B]">
+                              <div className="font-bold" style={{ color: PRIMARY_COLOR }}>
                                 Rp {order.grand_total.toLocaleString("id-ID")}
                               </div>
                               <span
@@ -849,39 +728,25 @@ export default function ProfilePage() {
                               </span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            {order.items.slice(0, 3).map((item, index) => (
-                              <div
-                                key={`${order.id}-${item.id}-${index}`}
-                                className="w-10 h-10 relative rounded-lg overflow-hidden"
-                              >
-                                <Image
-                                  src={item.image}
-                                  alt={item.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                            {order.items.length > 3 && (
-                              <span className="text-sm text-gray-500">
-                                +{order.items.length - 3} lainnya
-                              </span>
-                            )}
-                          </div>
+                          <p className="text-sm text-gray-700 mt-2">
+                             Properti: {order.items[0]?.name ?? 'Nama Properti Tidak Diketahui'}
+                          </p>
                         </div>
                       ))}
+                      {orders.length === 0 && (
+                          <p className="text-gray-500 text-center py-4 border border-dashed rounded-xl">Belum ada riwayat booking properti.</p>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Profile */}
+              {/* Profile (dipertahankan, hanya warna disesuaikan) */}
               {activeTab === "profile" && (
                 <div className="space-y-8">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
                         <UserIcon className="w-5 h-5" />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900">
@@ -891,7 +756,8 @@ export default function ProfilePage() {
                     <button
                       onClick={openEditProfileModal}
                       disabled={isPrefillingProfile}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#6B6B6B] text-white rounded-2xl font-semibold hover:bg-[#6B6B6B]/90 transition-colors disabled:opacity-60"
+                      className="flex items-center gap-2 px-4 py-2 text-white rounded-2xl font-semibold hover:opacity-90 transition-colors disabled:opacity-60"
+                      style={{ backgroundColor: PRIMARY_COLOR }}
                     >
                       <Edit3 className="w-4 h-4" />
                       {isPrefillingProfile ? "Memuat..." : "Edit"}
@@ -936,7 +802,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="bg-[#6B6B6B]/5 rounded-2xl p-6">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: ACCENT_COLOR + '10' }}>
                     <h3 className="font-semibold text-gray-900 mb-4">
                       Informasi Akun
                     </h3>
@@ -970,21 +836,22 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Addresses */}
+              {/* Addresses (Alamat Kontak) - Warna disesuaikan, logika tetap */}
               {activeTab === "addresses" && (
                 <div className="space-y-8">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
                         <MapPin className="w-5 h-5" />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900">
-                        Alamat Pengiriman
+                        Alamat Kontak & Tujuan
                       </h2>
                     </div>
                     <button
                       onClick={openCreateAddress}
-                      className="flex items-center gap-2 px-4 py-2 bg-[#6B6B6B] text-white rounded-2xl font-semibold hover:bg-[#6B6B6B]/90 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-white rounded-2xl font-semibold hover:opacity-90 transition-colors"
+                      style={{ backgroundColor: PRIMARY_COLOR }}
                     >
                       <Plus className="w-4 h-4" />
                       Tambah Alamat
@@ -1000,7 +867,7 @@ export default function ProfilePage() {
                       if (addressData.length === 0) {
                         return (
                           <div className="text-gray-600">
-                            Belum ada address.
+                            Belum ada address tersimpan.
                           </div>
                         );
                       }
@@ -1024,8 +891,8 @@ export default function ProfilePage() {
                                 key={a.id}
                                 className={`border-2 rounded-2xl p-6 transition-all ${
                                   a.is_primary
-                                    ? "border-[#6B6B6B] bg-[#6B6B6B]/5"
-                                    : "border-gray-200 hover:border-[#6B6B6B]/50"
+                                    ? "border-gray-400 bg-gray-100"
+                                    : "border-gray-200 hover:border-gray-400/50"
                                 }`}
                               >
                                 <div className="flex items-start justify-between mb-4">
@@ -1035,8 +902,8 @@ export default function ProfilePage() {
                                         Alamat
                                       </h3>
                                       {a.is_primary && (
-                                        <span className="px-2 py-1 bg-[#6B6B6B] text-white text-xs font-semibold rounded-full">
-                                          Default
+                                        <span className="px-2 py-1 text-white text-xs font-semibold rounded-full" style={{ backgroundColor: PRIMARY_COLOR }}>
+                                          Utama
                                         </span>
                                       )}
                                     </div>
@@ -1046,7 +913,7 @@ export default function ProfilePage() {
                                       onClick={() =>
                                         openEditAddress(Number(a.id))
                                       }
-                                      className="p-2 text-gray-400 hover:text-[#6B6B6B] transition-colors"
+                                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                                       title="Edit address"
                                     >
                                       <Edit3 className="w-4 h-4" />
@@ -1101,9 +968,10 @@ export default function ProfilePage() {
                                         );
                                       }
                                     }}
-                                    className="text-[#6B6B6B] text-sm font-semibold hover:underline"
+                                    className="text-sm font-semibold hover:underline"
+                                    style={{ color: PRIMARY_COLOR }}
                                   >
-                                    Jadikan Default
+                                    Jadikan Utama
                                   </button>
                                 )}
                               </div>
@@ -1114,7 +982,7 @@ export default function ProfilePage() {
                     })()
                   )}
 
-                  {/* Modal Create / Edit */}
+                  {/* Modal Create / Edit - Warna disesuaikan */}
                   {addrModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
                       <div
@@ -1141,168 +1009,170 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="space-y-4">
-                          {/* Province */}
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              Provinsi
-                            </label>
-                            <select
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.rajaongkir_province_id ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value
-                                  ? Number(e.target.value)
-                                  : null;
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  rajaongkir_province_id: v,
-                                  rajaongkir_city_id: null,
-                                  rajaongkir_district_id: null,
-                                }));
-                              }}
-                            >
-                              <option value="">-- Pilih Provinsi --</option>
-                              {provinceList.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                          {/* ... Form input fields (dipertahankan, styling fokus di LabeledInput) */}
+                           {/* Province */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Provinsi
+                                </label>
+                                <select
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.rajaongkir_province_id ?? ""}
+                                    onChange={(e) => {
+                                        const v = e.target.value
+                                            ? Number(e.target.value)
+                                            : null;
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            rajaongkir_province_id: v,
+                                            rajaongkir_city_id: null,
+                                            rajaongkir_district_id: null,
+                                        }));
+                                    }}
+                                >
+                                    <option value="">-- Pilih Provinsi --</option>
+                                    {provinceList.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                          {/* City */}
-                          <div>
-                            <label className="block text sm font-semibold text-gray-900 mb-2">
-                              Kota/Kabupaten
-                            </label>
-                            <select
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.rajaongkir_city_id ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value
-                                  ? Number(e.target.value)
-                                  : null;
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  rajaongkir_city_id: v,
-                                  rajaongkir_district_id: null,
-                                }));
-                              }}
-                              disabled={!addrForm.rajaongkir_province_id}
-                            >
-                              <option value="">
-                                -- Pilih Kota/Kabupaten --
-                              </option>
-                              {cityList.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {c.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                            {/* City */}
+                            <div>
+                                <label className="block text sm font-semibold text-gray-900 mb-2">
+                                    Kota/Kabupaten
+                                </label>
+                                <select
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.rajaongkir_city_id ?? ""}
+                                    onChange={(e) => {
+                                        const v = e.target.value
+                                            ? Number(e.target.value)
+                                            : null;
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            rajaongkir_city_id: v,
+                                            rajaongkir_district_id: null,
+                                        }));
+                                    }}
+                                    disabled={!addrForm.rajaongkir_province_id}
+                                >
+                                    <option value="">
+                                        -- Pilih Kota/Kabupaten --
+                                    </option>
+                                    {cityList.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                          {/* District */}
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              Kecamatan
-                            </label>
-                            <select
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.rajaongkir_district_id ?? ""}
-                              onChange={(e) =>
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  rajaongkir_district_id: e.target.value
-                                    ? Number(e.target.value)
-                                    : null,
-                                }))
-                              }
-                              disabled={!addrForm.rajaongkir_city_id}
-                            >
-                              <option value="">-- Pilih Kecamatan --</option>
-                              {districtList.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                  {d.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                            {/* District */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Kecamatan
+                                </label>
+                                <select
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.rajaongkir_district_id ?? ""}
+                                    onChange={(e) =>
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            rajaongkir_district_id: e.target.value
+                                                ? Number(e.target.value)
+                                                : null,
+                                        }))
+                                    }
+                                    disabled={!addrForm.rajaongkir_city_id}
+                                >
+                                    <option value="">-- Pilih Kecamatan --</option>
+                                    {districtList.map((d) => (
+                                        <option key={d.id} value={d.id}>
+                                            {d.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                          {/* Address line 1 */}
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              Alamat (Baris 1)
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.address_line_1 ?? ""}
-                              onChange={(e) =>
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  address_line_1: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
+                            {/* Address line 1 */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Alamat (Baris 1)
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.address_line_1 ?? ""}
+                                    onChange={(e) =>
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            address_line_1: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
 
-                          {/* Address line 2 */}
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              Alamat (Baris 2) – opsional
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.address_line_2 ?? ""}
-                              onChange={(e) =>
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  address_line_2: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
+                            {/* Address line 2 */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Alamat (Baris 2) – opsional
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.address_line_2 ?? ""}
+                                    onChange={(e) =>
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            address_line_2: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
 
-                          {/* Postal code */}
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-900 mb-2">
-                              Kode Pos
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full border border-gray-200 rounded-2xl px-3 py-2"
-                              value={addrForm.postal_code ?? ""}
-                              onChange={(e) =>
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  postal_code: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
+                            {/* Postal code */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                    Kode Pos
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full border border-gray-200 rounded-2xl px-3 py-2"
+                                    value={addrForm.postal_code ?? ""}
+                                    onChange={(e) =>
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            postal_code: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
 
-                          {/* Default */}
-                          <div className="flex items-center gap-2">
-                            <input
-                              id="is_primary"
-                              type="checkbox"
-                              className="w-4 h-4"
-                              checked={Boolean(addrForm.is_primary)}
-                              onChange={(e) =>
-                                setAddrForm((p) => ({
-                                  ...p,
-                                  is_primary: e.target.checked,
-                                }))
-                              }
-                            />
-                            <label
-                              htmlFor="is_primary"
-                              className="text-sm text-gray-800"
-                            >
-                              Jadikan address default
-                            </label>
-                          </div>
+                            {/* Default */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    id="is_primary"
+                                    type="checkbox"
+                                    className="w-4 h-4"
+                                    checked={Boolean(addrForm.is_primary)}
+                                    onChange={(e) =>
+                                        setAddrForm((p) => ({
+                                            ...p,
+                                            is_primary: e.target.checked,
+                                        }))
+                                    }
+                                />
+                                <label
+                                    htmlFor="is_primary"
+                                    className="text-sm text-gray-800"
+                                >
+                                    Jadikan address default
+                                </label>
+                            </div>
+                         
                         </div>
 
                         <div className="mt-6 flex items-center justify-end gap-3">
@@ -1318,7 +1188,8 @@ export default function ProfilePage() {
                           <button
                             onClick={handleSubmitAddress}
                             disabled={isCreatingAddr || isUpdatingAddr}
-                            className="px-4 py-2 rounded-2xl bg-[#6B6B6B] text-white font-semibold hover:bg-[#6B6B6B]/90 disabled:opacity-60"
+                            className="px-4 py-2 rounded-2xl text-white font-semibold hover:opacity-90 disabled:opacity-60"
+                            style={{ backgroundColor: PRIMARY_COLOR }}
                           >
                             {addrEditId
                               ? isUpdatingAddr
@@ -1335,23 +1206,43 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {activeTab === "bank_accounts" && (
-                <BankAccountsTab
-                  userId={sessionId}
-                  userName={userProfile.fullName}
-                  userEmail={userProfile.email}
-                />
+              {/* Wishlist Properti (NEW TAB) */}
+              {activeTab === "wishlist" && (
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
+                        <Heart className="w-5 h-5" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Wishlist Properti Favorit
+                      </h2>
+                    </div>
+                    
+                    {/* Placeholder Wishlist Content */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
+                        <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">Kelola Properti Impian Anda</h3>
+                        <p className="text-gray-600 max-w-md mx-auto mb-4">
+                            Semua properti yang Anda tandai sebagai favorit akan muncul di sini. Cepat akses, dan pantau perubahan harga atau ketersediaan.
+                        </p>
+                        <Button className="font-semibold" style={{ backgroundColor: PRIMARY_COLOR }} onClick={() => router.push('/listings')}>
+                            <Home className="w-4 h-4 mr-2" />
+                            Cari Properti Sekarang
+                        </Button>
+                    </div>
+                </div>
               )}
 
-              {/* Orders */}
+
+              {/* Orders (Riwayat Booking) - Warna disesuaikan */}
               {activeTab === "orders" && (
                 <div className="space-y-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
-                      <Package className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY_COLOR }}>
+                      <Home className="w-5 h-5" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">
-                      Riwayat Pesanan
+                      Riwayat Booking Properti
                     </h2>
                   </div>
 
@@ -1359,12 +1250,12 @@ export default function ProfilePage() {
                     {(orders || []).map((order) => (
                       <div
                         key={order.id}
-                        className="border border-gray-200 rounded-2xl p-6 hover:border-[#6B6B6B] transition-colors"
+                        className="border border-gray-200 rounded-2xl p-6 hover:border-gray-400 transition-colors"
                       >
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                           <div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">
-                              #{order.orderNumber}
+                              #BOOK-{order.orderNumber}
                             </h3>
                             <div className="flex items-center gap-4 text-sm text-gray-600">
                               <div className="flex items-center gap-2">
@@ -1375,12 +1266,6 @@ export default function ProfilePage() {
                                   )}
                                 </span>
                               </div>
-                              {order.trackingNumber && (
-                                <div className="flex items-center gap-2">
-                                  <Truck className="w-4 h-4" />
-                                  <span>{order.trackingNumber}</span>
-                                </div>
-                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-4 mt-4 md:mt-0">
@@ -1392,7 +1277,7 @@ export default function ProfilePage() {
                               {getStatusText(order.status)}
                             </span>
                             <div className="text-right">
-                              <div className="font-bold text-xl text-[#6B6B6B]">
+                              <div className="font-bold text-xl" style={{ color: PRIMARY_COLOR }}>
                                 Rp {order.grand_total.toLocaleString("id-ID")}
                               </div>
                             </div>
@@ -1418,7 +1303,8 @@ export default function ProfilePage() {
                                   {item.name}
                                 </h4>
                                 <p className="text-sm text-gray-600">
-                                  Qty: {item.quantity}
+                                  {/* Qty dihilangkan karena properti biasanya 1 */}
+                                  Booking Fee
                                 </p>
                               </div>
                               <div className="text-right">
@@ -1439,22 +1325,17 @@ export default function ProfilePage() {
                         <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                           <button
                             onClick={() => openOrderDetailModal(order.id)}
-                            className="flex items-center gap-2 px-4 py-2 border border-[#6B6B6B] text-[#6B6B6B] rounded-2xl hover:bg-[#6B6B6B] hover:text-white transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 border rounded-2xl hover:bg-gray-100 transition-colors"
+                            style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
                           >
                             <Eye className="w-4 h-4" />
-                            Detail
+                            Detail & Pembayaran
                           </button>
                           {order.status === "delivered" && (
-                            <>
-                              <button className="flex items-center gap-2 px-4 py-2 bg-[#6B6B6B] text-white rounded-2xl hover:bg-[#6B6B6B]/90 transition-colors">
-                                <Download className="w-4 h-4" />
-                                Invoice
-                              </button>
-                              <button className="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-2xl hover:bg-yellow-200 transition-colors">
-                                <Star className="w-4 h-4" />
-                                Beri Review
-                              </button>
-                            </>
+                            <button className="flex items-center gap-2 px-4 py-2 text-white rounded-2xl hover:opacity-90 transition-colors" style={{ backgroundColor: PRIMARY_COLOR }}>
+                              <Download className="w-4 h-4" />
+                              Dokumen Booking
+                            </button>
                           )}
                         </div>
                       </div>
@@ -1463,251 +1344,24 @@ export default function ProfilePage() {
 
                   {orders.length === 0 && (
                     <div className="text-center py-12">
-                      <div className="w-24 h-24 bg-[#6B6B6B]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Package className="w-12 h-12 text-[#6B6B6B]" />
+                      <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: PRIMARY_COLOR + '10' }}>
+                        <Home className="w-12 h-12" style={{ color: PRIMARY_COLOR }} />
                       </div>
                       <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        Belum Ada Pesanan
+                        Belum Ada Riwayat Booking
                       </h3>
                       <p className="text-gray-600 mb-6">
-                        Anda belum memiliki riwayat pesanan. Mulai belanja
-                        sekarang!
+                        Properti yang Anda tambahkan ke keranjang dan proses pembayarannya akan muncul di sini.
                       </p>
                       <button
-                        onClick={() => router.push("/product")}
-                        className="bg-[#6B6B6B] text-white px-6 py-3 rounded-2xl font-semibold hover:bg-[#6B6B6B]/90 transition-colors"
+                        onClick={() => router.push("/listings")}
+                        className="text-white px-6 py-3 rounded-2xl font-semibold hover:opacity-90 transition-colors"
+                        style={{ backgroundColor: PRIMARY_COLOR }}
                       >
-                        Mulai Berbelanja
+                        Mulai Cari Properti
                       </button>
                     </div>
                   )}
-                </div>
-              )}
-
-              {activeTab === "orders_ppob" && (
-                <PPOBOrdersTab userId={sessionId} />
-              )}
-
-              {/* Anggota Koperasi */}
-              {activeTab === "anggota" &&
-                (userProfile.anggota && userProfile.anggota.reference !== "" ? (
-                  <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
-                        <Users className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold text-gray-900">
-                          Anggota Koperasi
-                        </h2>
-                        {/* Di header Anggota */}
-                        <div className="flex items-center gap-2 mt-1">
-                          <span
-                            className={`px-2 py-0.5 text-xs font-semibold rounded-full
-      ${
-        isAnggotaApproved
-          ? "bg-green-100 text-green-700"
-          : "bg-yellow-100 text-yellow-700"
-      }`}
-                          >
-                            Status: {anggotaStatusText}
-                          </span>
-                        </div>
-                        {isAnggotaApproved && (
-                          <p className="text-gray-600 mt-1">
-                            Anda telah terdaftar sebagai anggota koperasi.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col items-center">
-                      <div className="flex items-center gap-2 mb-2">
-                        {isAnggotaApproved ? (
-                          <>
-                            <ShieldCheck className="w-6 h-6 text-green-600" />
-                            <span className="font-semibold text-green-700">
-                              Status: Aktif
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck className="w-6 h-6 text-yellow-600" />
-                            <span className="font-semibold text-yellow-700">
-                              Status:{" "}
-                              {anggotaStatusText === "PENDING"
-                                ? "Pending"
-                                : anggotaStatusText}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      <div className="text-gray-700 mb-4">
-                        Nomor Anggota:{" "}
-                        <span className="font-bold">
-                          {userProfile.anggota.reference}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() =>
-                          (window.location.href = "/admin/anggota")
-                        }
-                        className="flex items-center gap-2 px-6 py-3 bg-[#6B6B6B] text-white rounded-xl font-semibold hover:bg-[#5a5a5a] transition-transform hover:scale-105"
-                      >
-                        <Landmark className="w-5 h-5" />
-                        Masuk ke Portal Anggota
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-12">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
-                        <Users className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold text-gray-900">
-                          Menjadi Anggota Koperasi
-                        </h2>
-                        <p className="text-gray-600 mt-1">
-                          Bergabunglah bersama kami dan nikmati berbagai
-                          keuntungan eksklusif.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                        Keuntungan Menjadi Anggota
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {benefits.map((benefit, index) => (
-                          <div
-                            key={index}
-                            className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex gap-5"
-                          >
-                            <div className="flex-shrink-0">{benefit.icon}</div>
-                            <div>
-                              <h4 className="font-bold text-lg text-gray-900">
-                                {benefit.title}
-                              </h4>
-                              <p className="text-gray-600 mt-1">
-                                {benefit.description}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="text-center bg-white border border-gray-200 rounded-2xl p-8">
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        Siap untuk Bergabung?
-                      </h3>
-                      <p className="text-gray-600 mt-2 max-w-xl mx-auto">
-                        Proses pendaftaran cepat dan mudah. Klik tombol di bawah
-                        ini untuk memulai langkah Anda menjadi bagian dari
-                        keluarga besar koperasi kami.
-                      </p>
-                      <button
-                        onClick={() => setIsDaftarAnggotaModalOpen(true)}
-                        className="mt-6 flex items-center gap-2 px-6 py-3 bg-[#6B6B6B] text-white rounded-xl font-semibold hover:bg-[#5a5a5a] transition-transform hover:scale-105 mx-auto"
-                      >
-                        <UserPlus className="w-5 h-5" />
-                        Daftar Sekarang
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-              {/* Seller */}
-              {activeTab === "seller" && (
-                <div className="space-y-12">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[#6B6B6B] rounded-2xl flex items-center justify-center text-white">
-                      <Store className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900">
-                        Menjadi Seller di Marketplace
-                      </h2>
-                      <p className="text-gray-600 mt-1">
-                        Mulai jual produk Anda di marketplace Koperasi Merah
-                        Putih dan jangkau lebih banyak pelanggan.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-                      Keuntungan Menjadi Seller
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex gap-5">
-                        <TrendingUp className="w-8 h-8 text-[#6B6B6B]" />
-                        <div>
-                          <h4 className="font-bold text-lg text-gray-900">
-                            Potensi Penjualan Lebih Besar
-                          </h4>
-                          <p className="text-gray-600 mt-1">
-                            Jangkau ribuan anggota koperasi dan pelanggan
-                            marketplace.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex gap-5">
-                        <CreditCard className="w-8 h-8 text-[#6B6B6B]" />
-                        <div>
-                          <h4 className="font-bold text-lg text-gray-900">
-                            Pembayaran Aman & Mudah
-                          </h4>
-                          <p className="text-gray-600 mt-1">
-                            Sistem pembayaran terintegrasi dan transparan.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex gap-5">
-                        <Briefcase className="w-8 h-8 text-[#6B6B6B]" />
-                        <div>
-                          <h4 className="font-bold text-lg text-gray-900">
-                            Dukungan Seller
-                          </h4>
-                          <p className="text-gray-600 mt-1">
-                            Tim support siap membantu pengembangan toko Anda.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex gap-5">
-                        <Users className="w-8 h-8 text-[#6B6B6B]" />
-                        <div>
-                          <h4 className="font-bold text-lg text-gray-900">
-                            Komunitas Seller
-                          </h4>
-                          <p className="text-gray-600 mt-1">
-                            Bergabung dengan komunitas seller koperasi untuk
-                            berbagi pengalaman dan tips.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-center bg-white border border-gray-200 rounded-2xl p-8">
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Siap Menjadi Seller?
-                    </h3>
-                    <p className="text-gray-600 mt-2 max-w-xl mx-auto">
-                      Proses pendaftaran seller sangat mudah. Klik tombol di
-                      bawah ini untuk memulai membuka toko Anda di marketplace
-                      kami.
-                    </p>
-                    <button
-                      onClick={() => setIsDaftarSellerModalOpen(true)}
-                      className="mt-6 flex items-center gap-2 px-6 py-3 bg-[#6B6B6B] text-white rounded-xl font-semibold hover:bg-[#5a5a5a] transition-transform hover:scale-105 mx-auto"
-                    >
-                      <Store className="w-5 h-5" />
-                      Daftar Menjadi Seller
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -1735,7 +1389,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Order Detail Modal (lihat + bayar + buka modal bukti) */}
+      {/* Order Detail Modal (dipertahankan) */}
       {orderDetailModalOpen && selectedOrder && (
         <OrderDetailModal
           open={orderDetailModalOpen}
@@ -1747,7 +1401,7 @@ export default function ProfilePage() {
         />
       )}
 
-      {/* Payment Proof Upload (untuk payment_method = manual) */}
+      {/* Payment Proof Upload (dipertahankan) */}
       <PaymentProofModal
         open={paymentProofModalOpen}
         onClose={closePaymentProofModal}
@@ -1760,25 +1414,11 @@ export default function ProfilePage() {
         uploadFn={uploadPaymentProof}
         isUploading={isUploadingProof}
       />
-
-      {/* Daftar Anggota Modal */}
-      <DaftarAnggotaModal
-        isOpen={isDaftarAnggotaModalOpen}
-        onClose={() => setIsDaftarAnggotaModalOpen(false)}
-      />
-
-      {/* Daftar Seller Modal */}
-      <DaftarSellerModal
-        isOpen={isDaftarSellerModalOpen}
-        onClose={() => setIsDaftarSellerModalOpen(false)}
-        onSuccess={handleModalSuccess}
-        userProfile={userProfile}
-      />
     </div>
   );
 }
 
-/* --------------------------------- tiny UI helper --------------------------------- */
+/* --------------------------------- tiny UI helper (styling disesuaikan) --------------------------------- */
 function LabeledInput({
   label,
   value,
@@ -1792,6 +1432,8 @@ function LabeledInput({
   type?: "text" | "email" | "tel" | "date";
   icon: React.ReactNode;
 }) {
+    const PRIMARY_COLOR = "#003366"; // Pastikan warna terdefinisi
+    
   return (
     <div>
       <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -1803,7 +1445,7 @@ function LabeledInput({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#6B6B6B] focus:border-transparent"
+          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#003366] focus:border-transparent"
         />
       </div>
     </div>

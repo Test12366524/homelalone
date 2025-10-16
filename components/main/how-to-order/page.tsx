@@ -193,7 +193,7 @@ export default function HowToOrderPage() {
     {
       question: "Metode pembayaran apa saja yang tersedia?",
       answer:
-        "Saat ini kami menerima pembayaran melalui Transfer Bank dan E-Wallet. Semua transaksi akan diarahkan ke rekening resmi Koperasi Merah Putih.",
+        "Saat ini kami menerima pembayaran melalui Transfer Bank dan E-Wallet. Semua transaksi akan diarahkan ke rekening resmi NESTAR.",
     },
     {
       question: "Berapa lama proses persetujuan pinjaman?",
@@ -304,7 +304,7 @@ export default function HowToOrderPage() {
           <h1 className="text-4xl lg:text-6xl font-bold text-[#000000] mb-6">
             Cara Menggunakan
             <span className="block text-[#6B6B6B]">Layanan di</span>
-            <span className="block text-[#E53935]">Koperasi Merah Putih</span>
+            <span className="block text-[#E53935]">NESTAR</span>
           </h1>
 
           {/* Subtitle */}

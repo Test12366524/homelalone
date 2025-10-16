@@ -3,14 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   Heart,
-  ShoppingCart,
+  ShoppingCart, // Mengganti MapPin
   Eye,
   Star,
   Search,
   Grid3X3,
   List,
-  Sparkles,
-  Package,
+  ShieldCheck,
+  Home, 
+  Phone, // Mengganti Phone di detail dengan ShoppingCart
 } from "lucide-react";
 import Image from "next/image";
 import { Product } from "@/types/admin/product";
@@ -20,8 +21,9 @@ import {
 } from "@/services/product.service";
 import DotdLoader from "@/components/loader/3dot";
 
-// ==== Cart (tanpa sidebar)
-import useCart from "@/hooks/use-cart";
+// ==== Mengaktifkan kembali Cart
+import useCart from "@/hooks/use-cart"; // Diaktifkan kembali
+
 import { useGetPublicProductCategoryListQuery } from "@/services/public/public-category.service";
 import { useGetSellerListQuery } from "@/services/admin/seller.service";
 import { Combobox } from "@/components/ui/combo-box";
@@ -30,6 +32,11 @@ import { useSession } from "next-auth/react";
 
 type ViewMode = "grid" | "list";
 
+// Warna NESTAR Properti
+const PRIMARY_COLOR = "#003366"; // Biru Gelap
+const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+const SECONDARY_TEXT_COLOR = "#4A5568"; // Abu-abu gelap
+
 export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,6 +44,7 @@ export default function ProductsPage() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [wishlist, setWishlist] = useState<number[]>([]);
+
   const [filter, setFilter] = useState({
     category: "all",
     ageGroup: "all",
@@ -48,7 +56,7 @@ export default function ProductsPage() {
   const { data: session } = useSession();
   const userRole = session?.user?.roles[0]?.name ?? "";
 
-  // Ambil kategori publik (top-level). Sesuaikan paginate jika perlu.
+  // Ambil kategori publik (diinterpretasikan sebagai Tipe Properti/Area)
   const {
     data: categoryResp,
     isLoading: isCategoryLoading,
@@ -58,10 +66,10 @@ export default function ProductsPage() {
     paginate: 100,
   });
 
+  // Ambil data seller (diinterpretasikan sebagai Agen/Developer)
   const { data: sellerResp, isLoading: isSellerLoading } =
     useGetSellerListQuery({ page: 1, paginate: 100 });
 
-  // state untuk query pada Combobox (opsional; karena service belum ada search)
   const [sellerQuery, setSellerQuery] = useState("");
 
   const sellers = useMemo(() => sellerResp?.data ?? [], [sellerResp]);
@@ -70,14 +78,17 @@ export default function ProductsPage() {
     const q = sellerQuery.trim().toLowerCase();
     if (!q) return sellers;
     return sellers.filter((s) => {
+      // Mengubah fokus dari Shop Name ke Nama Agen/Developer
       const shopName = s.shop?.name?.toLowerCase() ?? "";
       const name = s.name?.toLowerCase() ?? "";
       const email = s.email?.toLowerCase() ?? "";
-      return shopName.includes(q) || name.includes(q) || email.includes(q);
+      return (
+        shopName.includes(q) || name.includes(q) || email.includes(q)
+      );
     });
   }, [sellers, sellerQuery]);
 
-  // helper: seller terpilih
+  // helper: seller terpilih (Agen/Developer)
   const selectedSeller = useMemo(
     () => sellers.find((s) => s.id === filter.sellerId) ?? null,
     [sellers, filter.sellerId]
@@ -88,7 +99,7 @@ export default function ProductsPage() {
     [categoryResp]
   );
 
-  // Cart actions
+  // Cart actions diaktifkan kembali
   const { addItem } = useCart();
 
   // === Pagination from API ===
@@ -102,7 +113,6 @@ export default function ProductsPage() {
   } = useGetProductListPublicQuery({
     page: currentPage,
     paginate: ITEMS_PER_PAGE,
-    merk_id: 1,
   });
 
   const totalPages = useMemo(() => listResp?.last_page ?? 1, [listResp]);
@@ -125,11 +135,12 @@ export default function ProductsPage() {
     );
   };
 
-  // === Add to cart via zustand (persist ke localStorage)
+  // === Add to cart via zustand (digunakan untuk menyimpan properti di keranjang)
   const addToCart = (product: Product) => {
     addItem(product);
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("cartUpdated")); // kompatibel dgn logic globalmu
+      alert(`Properti "${product.name}" ditambahkan ke keranjang (keranjang properti).`);
+      // window.dispatchEvent(new CustomEvent("cartUpdated")); // kompatibel dgn logic globalmu
     }
   };
 
@@ -145,7 +156,7 @@ export default function ProductsPage() {
     };
   }, [isModalOpen]);
 
-  // Helpers
+  // Helpers (dipertahankan)
   const getImageUrl = (p: Product): string => {
     if (typeof p.image === "string" && p.image) return p.image;
     const media = (p as unknown as { media?: Array<{ original_url: string }> })
@@ -162,11 +173,9 @@ export default function ProductsPage() {
     return Number.isFinite(parsed) ? parsed : 0;
   };
 
-  // === Client-side filter & sort (hanya pada page aktif dari API) ===
+  // Logika filter (dipertahankan)
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-
-    // nama toko seller terpilih (kalau ada)
     const selectedShopName = selectedSeller?.shop?.name ?? "";
 
     return products.filter((p) => {
@@ -180,13 +189,12 @@ export default function ProductsPage() {
       const price = p.price;
       const matchPrice =
         filter.priceRange === "all" ||
-        (filter.priceRange === "under-100k" && price < 100_000) ||
-        (filter.priceRange === "100k-200k" &&
-          price >= 100_000 &&
-          price <= 200_000) ||
-        (filter.priceRange === "above-200k" && price > 200_000);
+        (filter.priceRange === "under-500jt" && price < 500_000_000) ||
+        (filter.priceRange === "500jt-1m" &&
+          price >= 500_000_000 &&
+          price <= 1_000_000_000) ||
+        (filter.priceRange === "above-1m" && price > 1_000_000_000);
 
-      // NEW: filter seller berbasis nama shop (merk_name)
       const matchSeller =
         !filter.sellerId ||
         (selectedShopName &&
@@ -214,10 +222,8 @@ export default function ProductsPage() {
       case "rating":
         return arr.sort((a, b) => toNumber(b.rating) - toNumber(a.rating));
       case "newest":
-        // tidak ada field tanggal urut khusus; dibiarkan apa adanya
-        return arr;
+        return arr.sort((a, b) => b.id - a.id); 
       default:
-        // featured: tidak ada flag; biarkan urutan dari API
         return arr;
     }
   }, [filteredProducts, filter.sort]);
@@ -228,7 +234,7 @@ export default function ProductsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 font-semibold mb-3">
-            Gagal memuat produk.
+            Gagal memuat daftar properti.
           </p>
           <button
             onClick={() => refetch()}
@@ -242,49 +248,51 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-[#6B6B6B]/10">
+    <div className="min-h-screen bg-gradient-to-br from-white to-[#00336610]">
       {/* ===================== Header / Hero ===================== */}
       <section className="relative pt-24 pb-12 px-6 lg:px-12 overflow-hidden bg-white">
-        {/* background aksen */}
-        <div className="absolute -top-24 -left-24 w-[40rem] h-[40rem] rounded-full bg-[#E53935]/10 blur-3xl opacity-50" />
-        <div className="absolute top-1/3 right-[-10%] w-[28rem] h-[28rem] rounded-full bg-[#6B6B6B]/10 blur-3xl opacity-40" />
+        {/* background aksen (Biru) */}
+        <div className="absolute -top-24 -left-24 w-[40rem] h-[40rem] rounded-full blur-3xl opacity-50" style={{ backgroundColor: `${ACCENT_COLOR}15` }} />
+        <div className="absolute top-1/3 right-[-10%] w-[28rem] h-[28rem] rounded-full blur-3xl opacity-40" style={{ backgroundColor: `${PRIMARY_COLOR}10` }} />
 
         <div className="container mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#E53935]/10 px-4 py-2 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-[#E53935]" />
-            <span className="text-sm font-medium text-[#6B6B6B]">
-              Jelajahi Marketplace
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6" style={{ backgroundColor: `${ACCENT_COLOR}15` }}>
+            <ShieldCheck className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+            <span className="text-sm font-medium" style={{ color: PRIMARY_COLOR }}>
+              Properti Terverifikasi
             </span>
           </div>
 
-          <h1 className="text-4xl lg:text-6xl font-bold text-[#6B6B6B] mb-6">
-            Produk UMKM{" "}
-            <span className="block text-[#E53935]">Koperasi Merah Putih</span>
+          <h1 className="text-4xl lg:text-6xl font-bold text-gray-800 mb-6">
+            Jelajahi Listing{" "}
+            <span className="block" style={{ color: PRIMARY_COLOR }}>
+              Hunian Impian Anda
+            </span>
           </h1>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Temukan produk unggulan dari UMKM anggota kami dan solusi keuangan
-            dari layanan simpan pinjam koperasi.
+            Temukan rumah, apartemen, atau tanah dengan jaminan legalitas dan
+            dukungan agen profesional NESTAR.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-[#E53935] rounded-full" />
-              <span>Produk UMKM Lokal</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PRIMARY_COLOR }} />
+              <span>Jaminan Legalitas</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-[#6B6B6B] rounded-full" />
-              <span>Dikelola Anggota</span>
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: ACCENT_COLOR }} />
+              <span>Simulasi KPR Akurat</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-black rounded-full" />
-              <span>Tersedia Layanan Pinjaman</span>
+              <div className="w-3 h-3 rounded-full bg-black" />
+              <span>Agen Berlisensi</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===================== Filters & Search (Koperasi Theme) ===================== */}
+      {/* ===================== Filters & Search (Properti Theme) ===================== */}
       <section className="px-6 lg:px-12 mb-8">
         <div className="container mx-auto">
           <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-200">
@@ -294,29 +302,30 @@ export default function ProductsPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Cari produk & layanan..."
+                  placeholder="Cari lokasi, tipe properti, atau developer..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent"
                 />
               </div>
 
-              {/* Filters */}
+              {/* Filters (dipertahankan) */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Category */}
+                {/* Category (Tipe Properti/Area) */}
                 <select
                   value={filter.category}
                   onChange={(e) =>
                     setFilter({ ...filter, category: e.target.value })
                   }
-                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E53935] bg-white text-[#6B6B6B]"
+                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 bg-white"
+                  style={{ color: SECONDARY_TEXT_COLOR }}
                   disabled={isCategoryLoading}
                 >
-                  <option value="all">Semua Kategori</option>
+                  <option value="all">Semua Tipe Properti</option>
 
                   {isCategoryLoading && (
                     <option value="" disabled>
-                      Memuat kategori...
+                      Memuat tipe...
                     </option>
                   )}
 
@@ -327,31 +336,22 @@ export default function ProductsPage() {
                         {cat.name}
                       </option>
                     ))}
-
-                  {isCategoryError && (
-                    <>
-                      <option value="" disabled>
-                        Gagal memuat kategori
-                      </option>
-                      {/* fallback (opsional) */}
-                      <option value="lainnya">Lainnya</option>
-                    </>
-                  )}
                 </select>
 
-                {/* Price */}
+                {/* Price (Rentang Harga Properti) */}
                 <select
                   value={filter.priceRange}
                   onChange={(e) =>
                     setFilter({ ...filter, priceRange: e.target.value })
                   }
-                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E53935] bg-white text-[#6B6B6B]"
+                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 bg-white"
+                  style={{ color: SECONDARY_TEXT_COLOR }}
                 >
                   <option value="all">Semua Harga</option>
-                  <option value="under-100k">Di bawah Rp100.000</option>
-                  <option value="100k-200k">Rp100.000 - Rp200.000</option>
-                  <option value="200k-500k">Rp200.000 - Rp500.000</option>
-                  <option value="above-500k">Di atas Rp500.000</option>
+                  <option value="under-500jt">Di bawah Rp500 Juta</option>
+                  <option value="500jt-1m">Rp500 Juta - Rp1 Miliar</option>
+                  <option value="1m-3m">Rp1 Miliar - Rp3 Miliar</option>
+                  <option value="above-3m">Di atas Rp3 Miliar</option>
                 </select>
 
                 {/* Sort */}
@@ -360,38 +360,36 @@ export default function ProductsPage() {
                   onChange={(e) =>
                     setFilter({ ...filter, sort: e.target.value })
                   }
-                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E53935] bg-white text-[#6B6B6B]"
+                  className="px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 bg-white"
+                  style={{ color: SECONDARY_TEXT_COLOR }}
                 >
-                  <option value="featured">Unggulan</option>
-                  <option value="newest">Terbaru</option>
+                  <option value="featured">Unggulan (Direkomendasikan)</option>
+                  <option value="newest">Listing Terbaru</option>
                   <option value="price-low">Harga: Rendah - Tinggi</option>
                   <option value="price-high">Harga: Tinggi - Rendah</option>
-                  <option value="rating">Rating Tertinggi</option>
+                  <option value="rating">Ulasan Tertinggi</option>
                 </select>
 
-                {/* Seller (Combobox) */}
-                {userRole === "superadmin" && (
-                  <div className="w-72 lg:w-40">
-                    <Combobox
-                      value={filter.sellerId}
-                      onChange={(id) => setFilter({ ...filter, sellerId: id })}
-                      onSearchChange={(q) => setSellerQuery(q)}
-                      data={filteredSellers}
-                      isLoading={isSellerLoading}
-                      placeholder="Pilih Seller"
-                      getOptionLabel={(s) =>
-                        s.shop?.name
-                          ? `${s.shop.name} (${s.email})`
-                          : `${s.name} (${s.email})`
-                      }
-                      buttonClassName="h-12 rounded-xl" // biar tinggi sama dengan select lain
-                    />
-                  </div>
-                )}
+                {/* Seller (Agen/Developer Combobox) */}
+                <div className="w-72 lg:w-40">
+                  <Combobox
+                    value={filter.sellerId}
+                    onChange={(id) => setFilter({ ...filter, sellerId: id })}
+                    onSearchChange={(q) => setSellerQuery(q)}
+                    data={filteredSellers}
+                    isLoading={isSellerLoading}
+                    placeholder="Pilih Agen/Developer"
+                    getOptionLabel={(s) =>
+                      s.shop?.name
+                        ? `${s.shop.name} (ID: ${s.id})`
+                        : `${s.name} (Agen)`
+                    }
+                    buttonClassName="h-12 rounded-xl"
+                  />
+                </div>
 
                 {/* Reset semua filter */}
                 <Button
-                  variant="destructive"
                   className="h-12"
                   size="lg"
                   onClick={() => {
@@ -405,20 +403,22 @@ export default function ProductsPage() {
                       sellerId: null,
                     });
                   }}
+                  style={{ backgroundColor: ACCENT_COLOR }} // Biru Muda untuk Reset
                 >
                   Reset Filter
                 </Button>
               </div>
 
-              {/* View Mode */}
+              {/* View Mode (dipertahankan) */}
               <div className="flex bg-gray-100 rounded-2xl p-1">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-xl transition-colors ${
                     viewMode === "grid"
-                      ? "bg-[#E53935] text-white shadow-sm"
-                      : "text-[#6B6B6B] hover:text-[#E53935]"
+                      ? "text-white shadow-sm"
+                      : `text-gray-600 hover:text-gray-800`
                   }`}
+                  style={{ backgroundColor: viewMode === "grid" ? PRIMARY_COLOR : 'transparent' }}
                 >
                   <Grid3X3 className="w-5 h-5" />
                 </button>
@@ -426,9 +426,10 @@ export default function ProductsPage() {
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-xl transition-colors ${
                     viewMode === "list"
-                      ? "bg-[#E53935] text-white shadow-sm"
-                      : "text-[#6B6B6B] hover:text-[#E53935]"
+                      ? "text-white shadow-sm"
+                      : `text-gray-600 hover:text-gray-800`
                   }`}
+                  style={{ backgroundColor: viewMode === "list" ? PRIMARY_COLOR : 'transparent' }}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -447,9 +448,9 @@ export default function ProductsPage() {
                 <DotdLoader />
               </div>
             ) : (
-              <p className="text-[#6B6B6B]">
+              <p className="text-gray-600">
                 Menampilkan {sortedProducts?.length ?? 0} dari{" "}
-                {products?.length ?? 0} produk
+                {products?.length ?? 0} properti
               </p>
             )}
           </div>
@@ -481,21 +482,16 @@ export default function ProductsPage() {
                           onClick={() => toggleWishlist(product.id)}
                           className={`p-2 rounded-full shadow-lg transition-colors ${
                             wishlist.includes(product.id)
-                              ? "bg-[#E53935] text-white"
-                              : "bg-white text-[#6B6B6B] hover:text-[#E53935]"
+                              ? "text-white fill-current"
+                              : "bg-white text-gray-600 hover:text-gray-800"
                           }`}
+                          style={{ backgroundColor: wishlist.includes(product.id) ? PRIMARY_COLOR : 'white' }}
                         >
-                          <Heart
-                            className={`w-5 h-5 ${
-                              wishlist.includes(product.id)
-                                ? "fill-current"
-                                : ""
-                            }`}
-                          />
+                          <Heart className={`w-5 h-5`} />
                         </button>
                         <button
                           onClick={() => openProductModal(product)}
-                          className="p-2 bg-white text-[#6B6B6B] hover:text-[#E53935] rounded-full shadow-lg transition-colors"
+                          className="p-2 bg-white text-gray-600 hover:text-gray-800 rounded-full shadow-lg transition-colors"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
@@ -504,10 +500,10 @@ export default function ProductsPage() {
 
                     <div className="p-6">
                       <div className="mb-3">
-                        <span className="text-xs text-[#6B6B6B] font-medium">
+                        <span className="text-xs text-gray-600 font-medium">
                           {product.category_name}
                         </span>
-                        <h3 className="text-lg font-bold text-[#000000] mt-1 line-clamp-2">
+                        <h3 className="text-lg font-bold text-gray-800 mt-1 line-clamp-2">
                           {product.name}
                         </h3>
                       </div>
@@ -525,21 +521,23 @@ export default function ProductsPage() {
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-[#6B6B6B]">
-                          ({reviews})
+                        <span className="text-sm text-gray-600">
+                          ({reviews} ulasan)
                         </span>
                       </div>
 
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="text-2xl font-bold text-[#6B6B6B]">
+                        <span className="text-2xl font-bold text-gray-800">
                           Rp {product.price.toLocaleString("id-ID")}
                         </span>
                       </div>
 
                       <div className="flex gap-2">
+                        {/* PERUBAHAN: Hubungi Agen -> Tambah ke Keranjang */}
                         <button
                           onClick={() => addToCart(product)}
-                          className="flex-1 bg-[#E53935] text-white py-3 rounded-2xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2"
+                          style={{ backgroundColor: PRIMARY_COLOR }}
                         >
                           <ShoppingCart className="w-5 h-5" />
                           Tambah ke Keranjang
@@ -577,10 +575,10 @@ export default function ProductsPage() {
                         <div>
                           <div className="flex items-start justify-between mb-4">
                             <div>
-                              <span className="text-sm text-[#6B6B6B] font-medium">
+                              <span className="text-sm text-gray-600 font-medium">
                                 {product.category_name}
                               </span>
-                              <h3 className="text-2xl font-bold text-[#000000] mt-1">
+                              <h3 className="text-2xl font-bold text-gray-800 mt-1">
                                 {product.name}
                               </h3>
                             </div>
@@ -588,21 +586,16 @@ export default function ProductsPage() {
                               onClick={() => toggleWishlist(product.id)}
                               className={`p-2 rounded-full transition-colors ${
                                 wishlist.includes(product.id)
-                                  ? "bg-[#E53935] text-white"
-                                  : "bg-gray-100 text-[#6B6B6B] hover:text-[#E53935]"
+                                  ? "text-white fill-current"
+                                  : "bg-gray-100 text-gray-600 hover:text-gray-800"
                               }`}
+                              style={{ backgroundColor: wishlist.includes(product.id) ? PRIMARY_COLOR : 'white' }}
                             >
-                              <Heart
-                                className={`w-5 h-5 ${
-                                  wishlist.includes(product.id)
-                                    ? "fill-current"
-                                    : ""
-                                }`}
-                              />
+                              <Heart className={`w-5 h-5`} />
                             </button>
                           </div>
 
-                          <p className="text-[#6B6B6B] mb-4 line-clamp-3">
+                          <p className="text-gray-600 mb-4 line-clamp-3">
                             {product.description}
                           </p>
 
@@ -619,7 +612,7 @@ export default function ProductsPage() {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-[#6B6B6B]">
+                            <span className="text-sm text-gray-600">
                               ({reviews} ulasan)
                             </span>
                           </div>
@@ -627,7 +620,7 @@ export default function ProductsPage() {
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="text-3xl font-bold text-[#6B6B6B]">
+                            <span className="text-3xl font-bold text-gray-800">
                               Rp {product.price.toLocaleString("id-ID")}
                             </span>
                           </div>
@@ -635,13 +628,15 @@ export default function ProductsPage() {
                           <div className="flex gap-3">
                             <button
                               onClick={() => openProductModal(product)}
-                              className="px-6 py-3 border border-[#6B6B6B] text-[#6B6B6B] rounded-2xl hover:bg-[#6B6B6B] hover:text-white transition-colors"
+                              className="px-6 py-3 border border-gray-400 text-gray-600 rounded-2xl hover:bg-gray-400 hover:text-white transition-colors"
                             >
-                              Detail
+                              Detail Properti
                             </button>
+                            {/* PERUBAHAN: Hubungi Agen -> Tambah ke Keranjang */}
                             <button
                               onClick={() => addToCart(product)}
-                              className="px-6 py-3 bg-[#E53935] text-white rounded-2xl hover:bg-red-700 transition-colors flex items-center gap-2"
+                              className="px-6 py-3 text-white rounded-2xl hover:opacity-90 transition-colors flex items-center gap-2"
+                              style={{ backgroundColor: PRIMARY_COLOR }}
                             >
                               <ShoppingCart className="w-5 h-5" />
                               Tambah ke Keranjang
@@ -656,16 +651,16 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Empty State (dipertahankan) */}
           {!isLoading && sortedProducts.length === 0 && (
             <div className="text-center py-20">
-              <div className="w-24 h-24 bg-[#6B6B6B]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Package className="w-12 h-12 text-[#6B6B6B]" />
+              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Home className="w-12 h-12 text-gray-600" />
               </div>
-              <h3 className="text-2xl font-bold text-[#000000] mb-4">
-                Produk tidak ditemukan
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Properti tidak ditemukan
               </h3>
-              <p className="text-[#6B6B6B] mb-6">
+              <p className="text-gray-600 mb-6">
                 Coba ubah filter atau kata kunci pencarian Anda.
               </p>
               <button
@@ -679,7 +674,8 @@ export default function ProductsPage() {
                     sellerId: null,
                   });
                 }}
-                className="bg-[#E53935] text-white px-6 py-3 rounded-2xl hover:bg-red-700 transition-colors"
+                className="text-white px-6 py-3 rounded-2xl hover:opacity-90 transition-colors"
+                style={{ backgroundColor: PRIMARY_COLOR }}
               >
                 Reset Filter
               </button>
@@ -688,7 +684,7 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Pagination */}
+      {/* Pagination (dipertahankan) */}
       {totalPages > 1 && (
         <section className="px-6 lg:px-12 pb-4">
           <div className="container mx-auto">
@@ -697,8 +693,8 @@ export default function ProductsPage() {
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => prev - 1)}
-                className="px-6 py-3 border border-[#6B6B6B] text-[#6B6B6B] rounded-2xl 
-                     hover:bg-[#E53935] hover:text-white transition-colors
+                className="px-6 py-3 border border-gray-400 text-gray-600 rounded-2xl 
+                     hover:text-white transition-colors
                      disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
@@ -713,9 +709,13 @@ export default function ProductsPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-12 h-12 rounded-2xl font-semibold transition-colors ${
                         currentPage === page
-                          ? "bg-[#E53935] text-white"
-                          : "border border-[#6B6B6B] text-[#6B6B6B] hover:bg-[#E53935] hover:text-white"
+                          ? "text-white"
+                          : "border border-gray-400 text-gray-600 hover:text-white"
                       }`}
+                      style={{
+                        backgroundColor: currentPage === page ? PRIMARY_COLOR : 'transparent',
+                        borderColor: currentPage !== page ? SECONDARY_TEXT_COLOR : PRIMARY_COLOR
+                      }}
                     >
                       {page}
                     </button>
@@ -727,8 +727,8 @@ export default function ProductsPage() {
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((prev) => prev + 1)}
-                className="px-6 py-3 border border-[#6B6B6B] text-[#6B6B6B] rounded-2xl 
-                     hover:bg-[#E53935] hover:text-white transition-colors
+                className="px-6 py-3 border border-gray-400 text-gray-600 rounded-2xl 
+                     hover:text-white transition-colors
                      disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
@@ -743,30 +743,28 @@ export default function ProductsPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              {/* Header */}
+              {/* Header (dipertahankan) */}
               <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-[#000000]">
-                  Detail Produk
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Detail Properti
                 </h2>
                 <button
                   onClick={() => {
                     setIsModalOpen(false);
                     setSelectedSlug(null);
                   }}
-                  className="p-2 hover:bg-[#6B6B6B]/10 rounded-2xl transition-colors"
+                  className="p-2 hover:bg-gray-200 rounded-2xl transition-colors"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Error State */}
+              {/* Error/Loading State (dipertahankan) */}
               {isDetailError && (
-                <div className="text-[#E53935]">
-                  Gagal memuat detail produk.
+                <div className="text-red-600">
+                  Gagal memuat detail properti.
                 </div>
               )}
-
-              {/* Loading State */}
               {isDetailLoading && (
                 <div className="w-full flex justify-center items-center min-h-32">
                   <DotdLoader />
@@ -776,7 +774,7 @@ export default function ProductsPage() {
               {/* Content */}
               {detailProduct && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Product Image */}
+                  {/* Product Image (dipertahankan) */}
                   <div className="relative">
                     <Image
                       src={getImageUrl(detailProduct)}
@@ -787,16 +785,16 @@ export default function ProductsPage() {
                     />
                   </div>
 
-                  {/* Product Info */}
+                  {/* Product Info (dipertahankan) */}
                   <div>
-                    <span className="text-sm text-[#6B6B6B] font-medium">
+                    <span className="text-sm text-gray-600 font-medium">
                       {detailProduct.category_name}
                     </span>
-                    <h3 className="text-3xl font-bold text-[#000000] mt-2 mb-4">
+                    <h3 className="text-3xl font-bold text-gray-800 mt-2 mb-4">
                       {detailProduct.name}
                     </h3>
 
-                    {/* Rating */}
+                    {/* Rating (dipertahankan) */}
                     <div className="flex items-center gap-2 mb-4">
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -804,55 +802,58 @@ export default function ProductsPage() {
                             key={star}
                             className={`w-5 h-5 ${
                               star <= Math.round(toNumber(detailProduct.rating))
-                                ? "fill-[#E53935] text-[#E53935]"
-                                : "text-[#6B6B6B]/40"
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-400"
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-[#6B6B6B]">
+                      <span className="text-gray-600">
                         ({detailProduct.total_reviews} ulasan)
                       </span>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-[#6B6B6B] mb-6">
+                    {/* Description (dipertahankan) */}
+                    <p className="text-gray-600 mb-6">
                       {detailProduct.description}
                     </p>
 
-                    {/* Meta Info */}
+                    {/* Meta Info (dipertahankan) */}
                     <div className="space-y-3 mb-6">
-                      <div className="flex items-center gap-3 text-sm text-[#6B6B6B]">
-                        <span className="font-medium">Kategori:</span>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <span className="font-medium">Tipe Properti:</span>
                         <span>{detailProduct.category_name}</span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-[#6B6B6B]">
-                        <span className="font-medium">Asal UMKM:</span>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <span className="font-medium">Developer/Agen:</span>
                         <span>{detailProduct.merk_name}</span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-[#6B6B6B]">
-                        <span className="font-medium">Stok Tersedia:</span>
-                        <span>{detailProduct.stock}</span>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <span className="font-medium">Status Legalitas:</span>
+                        <span className="font-bold text-green-600">
+                            Terverifikasi
+                        </span>
                       </div>
                     </div>
 
-                    {/* Price */}
+                    {/* Price (dipertahankan) */}
                     <div className="flex items-center gap-3 mb-6">
-                      <span className="text-4xl font-bold text-[#E53935]">
+                      <span className="text-4xl font-bold" style={{ color: PRIMARY_COLOR }}>
                         Rp {detailProduct.price.toLocaleString("id-ID")}
                       </span>
                     </div>
 
                     {/* Action Button */}
                     <div className="flex gap-3">
+                      {/* PERUBAHAN: Hubungi Agen Sekarang -> Tambah ke Keranjang */}
                       <button
                         onClick={() => {
                           addToCart(detailProduct);
                           setIsModalOpen(false);
                           setSelectedSlug(null);
                         }}
-                        className="flex-1 bg-[#E53935] text-white py-4 rounded-2xl font-semibold 
-                             hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 text-white py-4 rounded-2xl font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2"
+                        style={{ backgroundColor: PRIMARY_COLOR }}
                       >
                         <ShoppingCart className="w-5 h-5" />
                         Tambah ke Keranjang

@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, menuItems }) => {
             </div>
             <div className="ml-2">
               <h2 className="text-gray-900 text-lg font-bold font-italic">
-                Koperasi Merah Putih
+                NESTAR
               </h2>
             </div>
           </div>

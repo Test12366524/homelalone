@@ -8,9 +8,9 @@ import {
   MapPin,
   Phone,
   Mail,
-  Heart,
-  Shield,
-  Award,
+  Home, // Mengganti Heart/Shield/Award menjadi ikon properti/kepercayaan
+  Briefcase, // Untuk agen/profesional
+  CheckCircle, // Untuk verifikasi
   ArrowRight,
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
@@ -24,26 +24,31 @@ export default function Footer() {
     router.push("/faq");
   };
 
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+
+  // Konten FAQ Properti
   const faqs = [
     {
-      question: "Bagaimana cara menjadi anggota Koperasi Merah Putih?",
+      question: "Bagaimana NESTAR memverifikasi properti?",
       answer:
-        "Anda dapat mendaftar melalui aplikasi internal kami atau menghubungi tim kami. Prosesnya cepat dan mudah!",
+        "Tim profesional NESTAR melakukan audit legalitas dokumen (SHM/HGB) dan survei fisik untuk memastikan setiap listing akurat, sah, dan siap dijual.",
     },
     {
-      question: "Apakah UMKM bisa menjual produk di marketplace?",
+      question: "Apakah saya bisa mengajukan KPR lewat aplikasi?",
       answer:
-        "Ya, semua anggota koperasi bisa mendaftar sebagai seller di marketplace kami. Ini adalah platform khusus untuk UMKM anggota.",
+        "Ya, Anda dapat menggunakan fitur Simulasi KPR dan mengajukan permohonan awal ke bank mitra kami langsung dari aplikasi. Kami akan membantu prosesnya.",
     },
   ];
 
+  // Link Properti
   const quickLinks = [
-    { name: "Beranda", href: "/" },
+    { name: "Cari Rumah Dijual", href: "/properti-dijual" },
+    { name: "Simulasi KPR", href: "/kpr-simulator" },
+    { name: "Titip Jual Properti", href: "/jual-properti" },
     { name: "Tentang Kami", href: "/about" },
-    { name: "Cara Pemesanan", href: "/how-to-order" },
-    { name: "Testimoni", href: "/testimonials" },
-    { name: "FAQs", href: "/faq" },
-    { name: "Login Anggota", href: "/auth/login" },
+    { name: "Pusat Bantuan", href: "/faq" },
+    { name: "Login Agen", href: "/auth/login-agent" },
   ];
 
   return (
@@ -55,71 +60,71 @@ export default function Footer() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
               {/* Company Info */}
               <div className="lg:col-span-2">
-                {/* --- PERUBAHAN DIMULAI DI SINI --- */}
-                {/* Struktur diubah agar logo dan teks sejajar */}
+                {/* Logo dan Judul Brand Properti */}
                 <div className="flex items-center gap-4 mb-4">
+                  {/* Ganti gambar logo ke versi properti (asumsi logo properti memiliki warna biru) */}
                   <Image
-                    src="/logo-koperasi-merah-putih-online.webp"
-                    alt="Koperasi Merah Putih Logo"
+                    src="/nestar.webp" // Ganti dengan path logo properti biru Anda
+                    alt="NESTAR Properti"
                     width={75}
                     height={75}
                     className="flex-shrink-0 object-contain"
                   />
                   <div>
                     <h2 className="text-lg font-semibold text-gray-800">
-                      Koperasi Merah Putih
+                      NESTAR Properti
                     </h2>
                     <p className="text-sm text-gray-600">
-                      Koperasi Simpan Pinjam & Marketplace untuk UMKM
+                      Jembatan Nyaman Menuju Hunian Impian Anda
                     </p>
                   </div>
                 </div>
-                {/* --- PERUBAHAN SELESAI DI SINI --- */}
 
                 <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                  Mewujudkan kemandirian dan kesejahteraan anggota melalui unit
-                  usaha simpan pinjam dan marketplace yang terintegrasi.
+                  Portal properti digital yang menjamin **kepercayaan** dan
+                  **stabilitas** dalam setiap transaksi jual beli rumah. Kami
+                  hadir untuk menemukan aset terbaik Anda.
                 </p>
 
-                {/* Values */}
+                {/* Values Properti */}
                 <div className="space-y-3 mb-3 text-sm">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-[#E53935]" />
-                    <span>Anggota sebagai Prioritas</span>
+                    <CheckCircle className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                    <span>Listing Terverifikasi 100%</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Award className="w-4 h-4 text-[#E53935]" />
-                    <span>Transparansi & Akuntabilitas</span>
+                    <Briefcase className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                    <span>Agen Profesional Tersertifikasi</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-[#E53935]" />
-                    <span>Kesejahteraan Bersama</span>
+                    <Home className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                    <span>Fokus pada Kualitas Hunian</span>
                   </div>
                 </div>
 
                 {/* Contact Info */}
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3">
-                    <MapPin className="w-4.5 h-4.5 text-[#E53935]" />
+                    <MapPin className="w-4.5 h-4.5" style={{ color: PRIMARY_COLOR }} />
                     <span>
-                      Jl. Kemerdekaan No. 17, Jakarta Pusat, DKI Jakarta 10120
+                      Gedung NESTAR Properti, Jl. Properti Digital No. 88, Jakarta Selatan 12790
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-[#E53935]" />
-                    <span>+62 812 3456 7890</span>
+                    <Phone className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                    <span>+62 811 1234 5678 (Hotline Properti)</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-[#E53935]" />
-                    <span>info@koperasimerahputih.co.id</span>
+                    <Mail className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
+                    <span>info@nestarproperti.com</span>
                   </div>
                 </div>
               </div>
 
-              {/* Quick Links */}
+              {/* Quick Links Properti */}
               <div>
                 <h4 className="text-lg font-semibold mb-6 text-gray-800">
-                  Menu Utama
+                  Akses Cepat
                 </h4>
                 <ul className="space-y-3">
                   {quickLinks.map((link, index) => (
@@ -128,7 +133,7 @@ export default function Footer() {
                         href={link.href}
                         className="text-gray-600 hover:text-[#E53935] transition-colors flex items-center group"
                       >
-                        <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#E53935]" />
+                        <ArrowRight className="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: PRIMARY_COLOR }} />
                         <span className="group-hover:translate-x-1 transition-transform">
                           {link.name}
                         </span>
@@ -138,10 +143,10 @@ export default function Footer() {
                 </ul>
               </div>
 
-              {/* FAQ */}
+              {/* FAQ Properti */}
               <div>
                 <h4 className="text-lg font-semibold mb-6 text-gray-800">
-                  FAQ
+                  FAQ Properti
                 </h4>
                 <div className="space-y-4 mb-4">
                   {faqs.map((faq, i) => (
@@ -160,9 +165,9 @@ export default function Footer() {
                         </span>
                         <div className="flex-shrink-0">
                           {activeIndex === i ? (
-                            <ChevronUp className="w-4 h-4 text-[#E53935]" />
+                            <ChevronUp className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-[#E53935]" />
+                            <ChevronDown className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
                           )}
                         </div>
                       </button>
@@ -179,9 +184,11 @@ export default function Footer() {
                   <button
                     onClick={goToFaqPage}
                     type="button"
-                    className="w-full bg-[#E53935] text-white py-3 rounded-2xl font-semibold hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                    // Tombol CTA FAQ menggunakan warna Biru Gelap
+                    style={{ backgroundColor: PRIMARY_COLOR }}
+                    className="w-full text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-2"
                   >
-                    Punya Pertanyaan Lain?
+                    Butuh Informasi Lebih Lanjut?
                   </button>
                 </div>
               </div>
@@ -194,17 +201,17 @@ export default function Footer() {
           <div className="container mx-auto px-6 lg:px-12 py-6">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
               <p>
-                © {new Date().getFullYear()} Koperasi Merah Putih. All rights
-                reserved.
+                © {new Date().getFullYear()} NESTAR Properti. Hak cipta
+                dilindungi.
               </p>
 
-              {/* Social Media */}
+              {/* Social Media - Warna hover dipertahankan agar ikon media sosial tetap dikenali */}
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <p className="text-gray-600 text-sm">Ikuti kami di:</p>
+                <p className="text-gray-600 text-sm">Ikuti kami:</p>
                 <div className="flex gap-4">
                   <a
                     className="w-10 h-10 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-gray-600 hover:bg-pink-500 hover:text-white"
-                    href="https://www.instagram.com/koperasimerahputih"
+                    href="https://www.instagram.com/nestarproperti"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -212,7 +219,7 @@ export default function Footer() {
                   </a>
                   <a
                     className="w-10 h-10 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white"
-                    href="https://www.facebook.com/koperasimerahputih"
+                    href="https://www.facebook.com/nestarproperti"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -220,7 +227,7 @@ export default function Footer() {
                   </a>
                   <a
                     className="w-10 h-10 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-gray-600 hover:bg-green-500 hover:text-white"
-                    href="https://wa.me/6281234567890"
+                    href="https://wa.me/6281112345678"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

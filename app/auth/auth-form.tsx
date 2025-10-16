@@ -379,7 +379,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-red-50 to-white">
-      {/* Left Pane - Koperasi Merah Putih Theme with Carousel */}
+      {/* Left Pane - NESTAR Theme with Carousel */}
       <div className="relative hidden lg:flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0" ref={emblaRef}>
           <div className="embla__container flex h-full">
@@ -390,7 +390,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               >
                 <Image
                   src={src}
-                  alt={`Koperasi Merah Putih ${index + 1}`}
+                  alt={`NESTAR ${index + 1}`}
                   fill
                   style={{ objectFit: "cover" }}
                   quality={100}
@@ -508,18 +508,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
             <div className="flex items-center justify-center mb-6">
               <div className="flex items-center gap-1">
                 <Image
-                  src="/logo-koperasi-merah-putih-online.webp"
-                  alt="Koperasi Merah Putih Logo"
+                  src="/nestar.webp"
+                  alt="NESTAR"
                   width={50}
                   height={50}
                   className="flex-shrink-0 object-contain"
                 />
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    Koperasi Merah Putih
+                  <h2 className="text-lg text-left font-semibold text-gray-800">
+                    NESTAR
                   </h2>
                   <p className="text-xs text-gray-600 mt-[-5px]">
-                    Simpan Pinjam & Marketplace
+                    Jembatan Nyaman Menuju Hunian Impian Anda
                   </p>
                 </div>
               </div>
@@ -528,20 +528,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
             <div className="w-16 h-1 bg-gradient-to-r from-red-600 to-red-400 mx-auto mb-4"></div>
 
             <p className="text-base font-medium text-gray-700 max-w-sm mx-auto leading-relaxed">
-              Sistem Manajemen Koperasi Terintegrasi untuk Simpan Pinjam,
-              Pengelolaan Anggota, dan Operasional Keuangan
+              Portal properti digital yang menawarkan kepercayaan dan stabilitas dalam setiap transaksi.
             </p>
-
-            <div className="mt-6 flex justify-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                Simpan Pinjam
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                Manajemen Anggota
-              </div>
-            </div>
           </motion.div>
         </div>
 
@@ -583,18 +571,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
           <motion.div variants={variants} className="text-center">
             <div className="flex items-center justify-center mb-4 gap-1">
               <Image
-                src="/logo-koperasi-merah-putih-online.webp"
-                alt="Koperasi Merah Putih Logo"
+                src="/nestar.webp"
+                alt="NESTAR"
                 width={50}
                 height={50}
                 className="flex-shrink-0 object-contain"
               />
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Koperasi Merah Putih
+                  NESTAR
                 </h2>
                 <p className="text-xs text-gray-600 mt-[-5px]">
-                  Simpan Pinjam & Marketplace
+                  Jembatan Nyaman Menuju Hunian Impian Anda
                 </p>
               </div>
             </div>
@@ -1152,21 +1140,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
               </div>
             </div>
           </motion.form>
-
-          <motion.div
-            variants={variants}
-            className="text-center text-sm bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-red-100"
-          >
-            <span className="text-gray-600">
-              {isLogin ? "Belum memiliki akun admin?" : "Sudah memiliki akun?"}{" "}
-            </span>
-            <a
-              href={isLogin ? "/auth/register" : "/auth/login"}
-              className="font-semibold text-red-600 hover:text-red-700 hover:underline transition-colors duration-200"
-            >
-              {isLogin ? "Daftar sekarang" : "Masuk ke sistem"}
-            </a>
-          </motion.div>
         </motion.div>
       </div>
     </div>

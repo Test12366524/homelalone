@@ -14,6 +14,7 @@ export interface Payment {
   amount: number;
   created_at: string;
   updated_at: string;
+  redirect_url?: string;
 }
 export interface Simpanan {
   id: number;

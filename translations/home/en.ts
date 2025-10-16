@@ -1,7 +1,7 @@
 const translations = {
   "hero-title-1": "Achieve",
   "hero-title-2": "Healthy & Glowing Skin",
-  "hero-title-3": "with Koperasi Merah Putih",
+  "hero-title-3": "with NESTAR",
   "hero-subtitle":
     "Natural skincare, specially formulated to maintain hydration, brighten, and deliver real results for your skin.",
   "hero-cta-1": "Shop Now",
@@ -20,7 +20,7 @@ const translations = {
   "cta-title-1": "Start Your Skincare",
   "cta-title-2": "Today",
   "cta-subtitle":
-    "Feel the hydration, brightness, and health of your skin with Koperasi Merah Putih. Discover the products that best suit your skin’s needs.",
+    "Feel the hydration, brightness, and health of your skin with NESTAR. Discover the products that best suit your skin’s needs.",
   "cta-btn": "Shop Now",
   "testimony-title": "What Do They Say?",
 };

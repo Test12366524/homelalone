@@ -5,35 +5,39 @@ import en from "@/translations/home/en";
 import id from "@/translations/home/id";
 import { motion } from "framer-motion";
 import {
-  Handshake,
-  Store,
-  AppWindow,
-  BadgeDollarSign
+  // Menggunakan ikon properti yang lebih relevan
+  ShieldCheck, // Untuk verifikasi
+  Calculator, // Untuk KPR/Finansial
+  MapPin, // Untuk lokasi/pencarian
+  MessageSquare, // Untuk komunikasi agen
 } from "lucide-react";
 
 export default function Features() {
   const t = useTranslation({ id, en });
 
+  const PRIMARY_COLOR = "#003366"; // Biru Gelap
+  const ACCENT_COLOR = "#00BFFF"; // Biru Muda
+
   const features = [
     {
-      icon: <Handshake className="w-10 h-10 text-[#E53935]" />,
-      title: "Unit Usaha Simpan Pinjam",
-      desc: "Layanan keuangan yang aman dan terpercaya untuk seluruh anggota. Proses pengajuan pinjaman cepat, syarat ringan, dan bunga kompetitif untuk mendukung kebutuhan finansial Anda.",
+      icon: <ShieldCheck className="w-10 h-10" style={{ color: PRIMARY_COLOR }} />,
+      title: "Listing Properti Terverifikasi",
+      desc: "Semua properti di NESTAR melewati proses verifikasi ketat. Kami menjamin keakuratan data, legalitas, dan ketersediaan, memberikan Anda ketenangan dalam mencari hunian.",
     },
     {
-      icon: <Store className="w-10 h-10 text-[#E53935]" />,
-      title: "Marketplace UMKM",
-      desc: "Jelajahi beragam produk berkualitas dari UMKM anggota koperasi. Anggota dapat dengan mudah mendaftar sebagai seller untuk menjangkau pasar yang lebih luas tanpa biaya tersembunyi.",
+      icon: <Calculator className="w-10 h-10" style={{ color: PRIMARY_COLOR }} />,
+      title: "Simulasi KPR Akurat",
+      desc: "Gunakan fitur Kalkulator KPR kami untuk menghitung estimasi cicilan bulanan, uang muka, dan total pinjaman dari berbagai bank mitra secara real-time. Rencanakan finansial dengan cerdas.",
     },
     {
-      icon: <AppWindow className="w-10 h-10 text-[#E53935]" />,
-      title: "Aplikasi Internal Anggota",
-      desc: "Kelola semua aktivitas koperasi dalam satu platform. Anggota dan seller dapat memantau status pinjaman, transaksi, dan performa penjualan secara real-time dari mana saja.",
+      icon: <MapPin className="w-10 h-10" style={{ color: PRIMARY_COLOR }} />,
+      title: "Pencarian Berbasis Lokasi Canggih",
+      desc: "Temukan rumah berdasarkan lokasi, fasilitas terdekat (sekolah, stasiun, mall), dan filter spesifik (luas, tipe, harga). Cari properti idaman Anda lebih cepat dan efisien.",
     },
     {
-      icon: <BadgeDollarSign className="w-10 h-10 text-[#E53935]" />,
-      title: "Pendapatan Pasif",
-      desc: "Setiap anggota yang berbelanja di marketplace akan mendapatkan Sisa Hasil Usaha (SHU) setiap tahunnya. Semua terintegrasi dan aman.",
+      icon: <MessageSquare className="w-10 h-10" style={{ color: PRIMARY_COLOR }} />,
+      title: "Hubungi Agen Profesional",
+      desc: "Terhubung langsung dengan agen properti berlisensi atau in-house marketing kami melalui fitur chat terintegrasi. Dapatkan jawaban cepat dan jadwalkan kunjungan properti dengan mudah.",
     },
   ];
 
@@ -46,8 +50,8 @@ export default function Features() {
           transition={{ duration: 0.6 }}
           className="text-3xl md:text-4xl font-bold text-gray-800 mb-12"
         >
-          Mengapa Bergabung dengan{" "}
-          <span className="text-[#E53935]">Koperasi Merah Putih</span>?
+          Keunggulan Layanan{" "}
+          <span style={{ color: PRIMARY_COLOR }}>NESTAR</span>
         </motion.h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -60,6 +64,7 @@ export default function Features() {
               transition={{ duration: 0.6, delay: index * 0.2 }}
               className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition"
             >
+              {/* Ikon kini menggunakan warna PRIMARY_COLOR */}
               <div className="flex justify-center mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
                 {feature.title}
