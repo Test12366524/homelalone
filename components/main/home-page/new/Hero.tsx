@@ -39,7 +39,7 @@ export default function Hero() {
           {/* CTA Buttons */}
           <div className="flex gap-4">
             <Link
-              href="/properti-dijual"
+              href="/product"
               style={{ backgroundColor: PRIMARY_COLOR }}
               className="px-6 py-3 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition flex items-center gap-x-1.5"
             >
@@ -47,7 +47,7 @@ export default function Hero() {
               Cari Properti Dijual
             </Link>
             <Link
-              href="/kpr-simulator"
+              href="/kpr-simulation"
               style={{
                 backgroundColor: ACCENT_COLOR,
                 color: PRIMARY_COLOR,
