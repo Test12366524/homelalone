@@ -31,8 +31,8 @@ export default function Hero() {
           </h1>
           <p className="text-gray-600 text-lg">
             Jelajahi properti terverifikasi, dapatkan simulasi KPR akurat, dan
-            hubungi agen profesional. **NESTAR** adalah portal properti digital
-            yang menawarkan **kepercayaan** dan **stabilitas** dalam setiap
+            hubungi agen profesional. <strong>NESTAR</strong> adalah portal properti digital
+            yang menawarkan <strong>kepercayaan</strong> dan <strong>stabilitas</strong> dalam setiap
             transaksi.
           </p>
 

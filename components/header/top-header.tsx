@@ -55,7 +55,7 @@ export default function Header() {
   const translations: Translations = {
     id: {
       home: "Beranda",
-      listings: "Properti Dijual", // Mengganti Products
+      listings: "Properti Dijual / Sewa", // Mengganti Products
       kpr: "Simulasi KPR", // Mengganti Service/PPOB
       about: "Tentang Kami",
       news: "Artikel",

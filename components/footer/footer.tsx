@@ -43,12 +43,11 @@ export default function Footer() {
 
   // Link Properti
   const quickLinks = [
-    { name: "Cari Rumah Dijual", href: "/properti-dijual" },
-    { name: "Simulasi KPR", href: "/kpr-simulator" },
-    { name: "Titip Jual Properti", href: "/jual-properti" },
+    { name: "Cari Rumah Dijual / Disewakan", href: "/product" },
+    { name: "Simulasi KPR", href: "/kpr-simulation" },
+    { name: "Titip Jual Properti", href: "/titip-jual-properti" },
     { name: "Tentang Kami", href: "/about" },
     { name: "Pusat Bantuan", href: "/faq" },
-    { name: "Login Agen", href: "/auth/login-agent" },
   ];
 
   return (
@@ -81,8 +80,8 @@ export default function Footer() {
                 </div>
 
                 <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                  Portal properti digital yang menjamin **kepercayaan** dan
-                  **stabilitas** dalam setiap transaksi jual beli rumah. Kami
+                  Portal properti digital yang menjamin <strong>kepercayaan</strong> dan
+                  <strong>stabilitas</strong> dalam setiap transaksi jual beli rumah. Kami
                   hadir untuk menemukan aset terbaik Anda.
                 </p>
 
@@ -107,16 +106,16 @@ export default function Footer() {
                   <div className="flex items-center gap-3">
                     <MapPin className="w-4.5 h-4.5" style={{ color: PRIMARY_COLOR }} />
                     <span>
-                      Gedung NESTAR Properti, Jl. Properti Digital No. 88, Jakarta Selatan 12790
+                      JL Lanoni No 24 Kab Tolitoli Sulawesi Tengah
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
-                    <span>+62 811 1234 5678 (Hotline Properti)</span>
+                    <span>+62 852 4134 9524 (Hotline Properti)</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4" style={{ color: PRIMARY_COLOR }} />
-                    <span>info@nestarproperti.com</span>
+                    <span>info@nestar.web.id</span>
                   </div>
                 </div>
               </div>

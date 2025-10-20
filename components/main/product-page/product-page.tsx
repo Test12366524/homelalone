@@ -310,7 +310,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Filters (dipertahankan) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Category (Tipe Properti/Area) */}
                 <select
                   value={filter.category}
@@ -369,24 +369,6 @@ export default function ProductsPage() {
                   <option value="price-high">Harga: Tinggi - Rendah</option>
                   <option value="rating">Ulasan Tertinggi</option>
                 </select>
-
-                {/* Seller (Agen/Developer Combobox) */}
-                <div className="w-72 lg:w-40">
-                  <Combobox
-                    value={filter.sellerId}
-                    onChange={(id) => setFilter({ ...filter, sellerId: id })}
-                    onSearchChange={(q) => setSellerQuery(q)}
-                    data={filteredSellers}
-                    isLoading={isSellerLoading}
-                    placeholder="Pilih Agen/Developer"
-                    getOptionLabel={(s) =>
-                      s.shop?.name
-                        ? `${s.shop.name} (ID: ${s.id})`
-                        : `${s.name} (Agen)`
-                    }
-                    buttonClassName="h-12 rounded-xl"
-                  />
-                </div>
 
                 {/* Reset semua filter */}
                 <Button
