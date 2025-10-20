@@ -36,7 +36,6 @@ export default function Hero() {
             transaksi.
           </p>
 
-          {/* CTA Buttons */}
           <div className="flex gap-4">
             <Link
               href="/product"
