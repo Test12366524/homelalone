@@ -234,7 +234,7 @@ const KPRInput: React.FC<FormInputProps> = ({ label, icon, value, onChange, type
         {type === 'select' && options ? (
             <select
               value={value}
-              onChange={handleInputChange as any}
+              onChange={(e) => handleInputChange(e)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl appearance-none focus:outline-none focus:ring-2 focus:ring-opacity-75"
             >
               {options.map((option) => (
@@ -245,7 +245,7 @@ const KPRInput: React.FC<FormInputProps> = ({ label, icon, value, onChange, type
             <input
               type="text"
               value={value}
-              onChange={handleInputChange as any}
+              onChange={(e) => handleInputChange(e)}
               placeholder={placeholder}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-75"
             />
